@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spin for Dinner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#241626;
+    --bg-alt:#2f1c33;
+    --surface:#35213c;
+    --card:#3c2544;
+    --cream:#FBF2DE;
+    --cream-dim:#CBB9D6;
+    --ink:#241626;
+    --accent:#FF6B35;
+    --accent-ink:#2A1200;
+    --wheel-1:#E2472F;
+    --wheel-2:#F2A63B;
+    --wheel-3:#7C9A3A;
+    --wheel-4:#3B6EA5;
+    --wheel-5:#B23B6E;
+    --wheel-6:#F5CB4F;
+    --ring:#4a2c53;
+    --shadow: rgba(10,4,12,0.45);
+    --radius-lg:28px;
+    --radius-md:16px;
+    --font-display:'Baloo 2', system-ui, sans-serif;
+    --font-body:'Nunito Sans', system-ui, sans-serif;
+  }
+  :root[data-theme="light"]{
+    --bg:#FBF2DE;
+    --bg-alt:#F5E7C8;
+    --surface:#FFFFFF;
+    --card:#FFF8EA;
+    --cream:#2A1730;
+    --cream-dim:#6B5570;
+    --ink:#FBF2DE;
+    --ring:#EAD9B0;
+    --shadow: rgba(80,60,40,0.18);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#241626; --bg-alt:#2f1c33; --surface:#35213c; --card:#3c2544;
+      --cream:#FBF2DE; --cream-dim:#CBB9D6; --ring:#4a2c53; --shadow: rgba(10,4,12,0.45);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#241626; --bg-alt:#2f1c33; --surface:#35213c; --card:#3c2544;
+    --cream:#FBF2DE; --cream-dim:#CBB9D6; --ring:#4a2c53; --shadow: rgba(10,4,12,0.45);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: radial-gradient(circle at 50% -10%, var(--bg-alt), var(--bg) 60%);
+    color:var(--cream);
+    font-family:var(--font-body);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding: 18px 12px 60px;
+  }
+  .app{
+    width:100%;
+    max-width:480px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+  a, button{ font-family:inherit; }
+  button{ cursor:pointer; }
+  button:focus-visible, .chip:focus-visible, .tray-slot:focus-visible{
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* HEADER */
+  header{ text-align:center; padding-top:4px; }
+  .brand{
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size: clamp(28px, 8vw, 38px);
+    letter-spacing:0.5px;
+    line-height:1;
+    margin:0;
+    color:var(--cream);
+  }
+  .brand span{ color:var(--accent); }
+  .tagline{
+    margin:6px 0 0;
+    font-size:14px;
+    color:var(--cream-dim);
+    font-weight:600;
+  }
+  .top-actions{
+    display:flex; justify-content:center; gap:8px; margin-top:10px; flex-wrap:wrap;
+  }
+  .icon-btn{
+    background:var(--surface);
+    border:1px solid var(--ring);
+    color:var(--cream);
+    border-radius:999px;
+    width:38px;height:38px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:17px;
+    box-shadow:0 2px 0 var(--shadow);
+  }
+
+  /* THEME SELECTOR */
+  .theme-row{
+    display:flex; gap:8px; overflow-x:auto; padding:2px 2px 6px;
+    scrollbar-width:none;
+  }
+  .theme-row::-webkit-scrollbar{ display:none; }
+  .chip{
+    flex:0 0 auto;
+    background:var(--surface);
+    border:1px solid var(--ring);
+    color:var(--cream);
+    padding:8px 14px;
+    border-radius:999px;
+    font-weight:700;
+    font-size:13px;
+    white-space:nowrap;
+  }
+  .chip.active{
+    background:var(--accent);
+    color:var(--accent-ink);
+    border-color:var(--accent);
+  }
+
+  /* PROGRESS STEPPER */
+  .stepper{
+    display:flex; justify-content:space-between; align-items:center;
+    background:var(--surface);
+    border-radius:999px;
+    padding:8px 10px;
+    border:1px solid var(--ring);
+  }
+  .step{
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+    font-size:10px; color:var(--cream-dim); font-weight:700;
+    flex:1;
+    position:relative;
+  }
+  .step .dot{
+    width:30px;height:30px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:15px;
+    background:var(--bg-alt);
+    border:2px solid var(--ring);
+    transition:transform .25s ease, border-color .25s ease, background .25s ease;
+  }
+  .step.current .dot{
+    border-color:var(--accent);
+    transform:scale(1.12);
+    box-shadow:0 0 0 4px rgba(255,107,53,0.18);
+  }
+  .step.done .dot{
+    background:var(--accent);
+    border-color:var(--accent);
+  }
+  .step .lbl{ max-width:56px; text-align:center; }
+
+  /* STAGE */
+  .stage{
+    background:var(--surface);
+    border:1px solid var(--ring);
+    border-radius:var(--radius-lg);
+    padding:20px 16px 18px;
+    display:flex; flex-direction:column; align-items:center; gap:14px;
+    box-shadow:0 8px 0 var(--shadow);
+  }
+  .stage-title{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:20px;
+    margin:0;
+    text-align:center;
+  }
+  .stage-sub{
+    margin:-8px 0 0; font-size:13px; color:var(--cream-dim); font-weight:600;
+  }
+  .wheel-wrap{
+    position:relative;
+    width: clamp(220px, 62vw, 300px);
+    height: clamp(220px, 62vw, 300px);
+    margin: 6px 0 2px;
+  }
+  .pointer{
+    position:absolute;
+    top:-14px; left:50%; transform:translateX(-50%);
+    width:0;height:0;
+    border-left:14px solid transparent;
+    border-right:14px solid transparent;
+    border-top:22px solid var(--accent);
+    filter: drop-shadow(0 2px 0 var(--shadow));
+    z-index:3;
+  }
+  .wheel-outer{
+    width:100%;height:100%;
+    border-radius:50%;
+    background: var(--bg-alt);
+    padding:8px;
+    box-shadow: 0 10px 22px var(--shadow), inset 0 0 0 3px var(--ring);
+  }
+  svg.wheel{
+    width:100%; height:100%;
+    border-radius:50%;
+    display:block;
+    transform: rotate(0deg);
+  }
+  .hub{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:54px;height:54px;border-radius:50%;
+    background:var(--accent);
+    display:flex;align-items:center;justify-content:center;
+    font-size:24px;
+    box-shadow:0 3px 0 var(--shadow), 0 0 0 5px var(--surface);
+    z-index:2;
+  }
+  .spin-btn{
+    background:var(--accent);
+    color:var(--accent-ink);
+    border:none;
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:17px;
+    padding:12px 30px;
+    border-radius:999px;
+    box-shadow:0 4px 0 #c14a1f;
+    transition:transform .08s ease;
+  }
+  .spin-btn:active{ transform:translateY(3px); box-shadow:0 1px 0 #c14a1f; }
+  .spin-btn[disabled]{ opacity:.55; box-shadow:none; }
+  .ghost-btn{
+    background:transparent;
+    border:1.5px solid var(--ring);
+    color:var(--cream);
+    font-weight:700;
+    font-size:13px;
+    padding:9px 16px;
+    border-radius:999px;
+  }
+  .stage-actions{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+  .result-flash{
+    font-family:var(--font-display);
+    font-size:15px;
+    min-height:20px;
+    color:var(--cream);
+    text-align:center;
+  }
+  .result-flash b{ color:var(--accent); }
+
+  /* TRAY */
+  .tray{
+    background:var(--surface);
+    border:1px solid var(--ring);
+    border-radius:var(--radius-lg);
+    padding:14px;
+  }
+  .tray-head{
+    display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;
+  }
+  .tray-head h2{
+    font-family:var(--font-display); font-size:15px; margin:0;
+  }
+  .tray-grid{
+    display:grid; grid-template-columns:repeat(5,1fr); gap:8px;
+  }
+  .tray-slot{
+    background:var(--bg-alt);
+    border:1px dashed var(--ring);
+    border-radius:14px;
+    padding:8px 4px;
+    text-align:center;
+    min-height:70px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:4px;
+    position:relative;
+  }
+  .tray-slot.filled{ border-style:solid; }
+  .tray-slot .ic{ font-size:18px; }
+  .tray-slot .val{ font-size:10.5px; font-weight:700; line-height:1.15; }
+  .tray-slot .reroll{
+    position:absolute; top:-8px; right:-8px;
+    width:22px;height:22px;border-radius:50%;
+    background:var(--accent); color:var(--accent-ink);
+    border:2px solid var(--surface);
+    font-size:11px; display:flex;align-items:center;justify-content:center;
+  }
+
+  /* PANTRY / MODAL */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(10,4,12,0.6);
+    display:flex; align-items:flex-end; justify-content:center;
+    z-index:50;
+  }
+  .modal{
+    background:var(--surface);
+    border-radius:24px 24px 0 0;
+    padding:20px 18px 26px;
+    width:100%; max-width:480px;
+    max-height:82vh; overflow-y:auto;
+    border-top:1px solid var(--ring);
+  }
+  .modal h2{ font-family:var(--font-display); margin:0 0 4px; font-size:19px; }
+  .modal p.hint{ margin:0 0 14px; font-size:13px; color:var(--cream-dim); }
+  .modal-close{
+    float:right; background:none;border:none;color:var(--cream);font-size:20px;
+  }
+  .pantry-grid{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:6px; }
+  .pantry-chip{
+    background:var(--bg-alt); border:1.5px solid var(--ring); color:var(--cream);
+    padding:8px 13px; border-radius:999px; font-size:13px; font-weight:700;
+  }
+  .pantry-chip.on{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
+  .cat-tabs{ display:flex; gap:6px; overflow-x:auto; margin:10px 0 12px; }
+  .cat-tab{
+    background:var(--bg-alt); border:1.5px solid var(--ring); color:var(--cream);
+    padding:7px 12px; border-radius:999px; font-size:12.5px; font-weight:700; white-space:nowrap;
+  }
+  .cat-tab.active{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
+  .edit-list{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+  .edit-chip{
+    background:var(--bg-alt); border:1.5px solid var(--ring); color:var(--cream);
+    padding:7px 8px 7px 13px; border-radius:999px; font-size:13px; font-weight:600;
+    display:flex; align-items:center; gap:6px;
+  }
+  .edit-chip button{
+    background:var(--ring); color:var(--cream); border:none; border-radius:50%;
+    width:18px;height:18px; font-size:11px; line-height:1;
+  }
+  .add-row{ display:flex; gap:8px; margin-bottom:10px; }
+  .add-row input{
+    flex:1; background:var(--bg-alt); border:1.5px solid var(--ring); color:var(--cream);
+    padding:9px 12px; border-radius:999px; font-size:13px; font-family:inherit;
+  }
+  .add-row input::placeholder{ color:var(--cream-dim); }
+  .add-row button{
+    background:var(--accent); color:var(--accent-ink); border:none; border-radius:999px;
+    padding:0 16px; font-weight:800;
+  }
+  .reset-line{
+    background:none; border:none; color:var(--cream-dim); font-size:12.5px; text-decoration:underline;
+    padding:0; margin-top:4px;
+  }
+  .empty-hint{ text-align:center; color:var(--cream-dim); font-size:13px; padding:20px 0; font-weight:600; }
+
+  /* FAVORITES / HISTORY LIST ITEMS */
+  .fav-item{
+    background:var(--card); border:1px solid var(--ring); border-radius:var(--radius-md);
+    padding:14px; margin-bottom:12px; text-align:left; position:relative;
+  }
+  .fav-item .fav-date{ font-size:11px; color:var(--cream-dim); font-weight:700; margin:0 0 6px; }
+  .fav-item h3{ font-family:var(--font-display); font-size:15px; margin:0 0 8px; color:var(--accent); }
+  .fav-item .tags-mini{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+  .fav-item .tag-mini{ background:var(--bg-alt); border:1px solid var(--ring); border-radius:999px; padding:4px 9px; font-size:11px; font-weight:700; }
+  .fav-item ol{ margin:0; padding-left:16px; font-size:12.5px; line-height:1.5; }
+  .fav-item li{ margin-bottom:4px; }
+  .fav-remove{ position:absolute; top:10px; right:10px; background:none; border:none; color:var(--cream-dim); font-size:16px; line-height:1; }
+
+  /* FINAL SCREEN */
+  .final-card{
+    background:var(--surface); border:1px solid var(--ring); border-radius:var(--radius-lg);
+    padding:20px 18px; text-align:center;
+  }
+  .final-card h2{ font-family:var(--font-display); font-size:22px; margin:0 0 4px; }
+  .final-card p{ margin:0 0 14px; color:var(--cream-dim); font-size:13.5px; font-weight:600; }
+  .plate-summary{
+    display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:16px;
+  }
+  .tag{
+    background:var(--bg-alt); border:1px solid var(--ring); border-radius:999px;
+    padding:7px 12px; font-size:12.5px; font-weight:700;
+  }
+  .recipe-card{
+    background:var(--card); border:1px solid var(--ring); border-radius:var(--radius-md);
+    padding:16px; text-align:left; margin-bottom:12px;
+  }
+  .recipe-card h3{
+    font-family:var(--font-display); font-size:16px; margin:0 0 4px; color:var(--accent);
+  }
+  .recipe-card .recipe-meta{ font-size:11.5px; color:var(--cream-dim); font-weight:700; margin:0 0 10px; }
+  .recipe-card ol{ margin:0 0 10px; padding-left:18px; font-size:13.5px; line-height:1.55; }
+  .recipe-card li{ margin-bottom:6px; }
+  .save-fav-btn{
+    background:var(--bg-alt); border:1.5px solid var(--ring); color:var(--cream);
+    font-size:12px; font-weight:700; padding:7px 13px; border-radius:999px;
+  }
+  .save-fav-btn.saved{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
+
+  footer{ text-align:center; font-size:11.5px; color:var(--cream-dim); margin-top:4px; }
+
+  @media (prefers-reduced-motion: reduce){
+    svg.wheel{ transition-duration: .4s !important; }
+    .spin-btn:active{ transform:none; }
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <header>
+    <h1 class="brand">SPIN FOR <span>DINNER</span></h1>
+    <p class="tagline">Snurra fram kvällens middag</p>
+    <div class="top-actions">
+      <button class="icon-btn" id="pantryBtn" title="Mitt skafferi" aria-label="Mitt skafferi">🧺</button>
+      <button class="icon-btn" id="editBtn" title="Anpassa hjul" aria-label="Anpassa hjul">⚙️</button>
+      <button class="icon-btn" id="favBtn" title="Favoriter" aria-label="Favoriter">❤️</button>
+      <button class="icon-btn" id="historyBtn" title="Historik" aria-label="Historik">🕘</button>
+      <button class="icon-btn" id="resetBtn" title="Börja om" aria-label="Börja om">↺</button>
+    </div>
+  </header>
+
+  <div class="theme-row" id="themeRow"></div>
+
+  <div class="stepper" id="stepper"></div>
+
+  <div id="gameArea"></div>
+
+  <div class="tray">
+    <div class="tray-head"><h2>Kvällens tallrik</h2></div>
+    <div class="tray-grid" id="trayGrid"></div>
+  </div>
+
+  <footer>Prototyp · dina val sparas bara i den här webbläsaren</footer>
+</div>
+
+<div id="modalRoot"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var COLORS = ['var(--wheel-1)','var(--wheel-2)','var(--wheel-3)','var(--wheel-4)','var(--wheel-5)','var(--wheel-6)'];
+
+  var THEMES = {
+    classic: { label:'Klassiskt',
+      protein:['Kyckling','Fläskfilé','Nötfärs','Lax','Räkor','Tofu','Bacon','Kikärtor'],
+      carb:['Ris','Pasta','Potatis','Couscous','Bulgur','Tortilla','Quinoa','Nudlar'],
+      veggie:['Paprika','Broccoli','Morot','Zucchini','Champinjoner','Rödlök','Spenat','Majs','Aubergine','Vitkål'],
+      sauce:['Teriyaki','Vitlökssmör','Curry','Tomatsås','Pesto','Gräddsås','Chimichurri','Soja & ingefära'],
+      wild:['Chili & choklad','Ananas','Fetaost','Kokos','Rostad vitlök','Extra chili','Lime & koriander','Karamelliserad lök','Pinjenötter','Fritt val – du väljer']
+    },
+    vegetarian: { label:'Vegetariskt',
+      protein:['Tofu','Halloumi','Kikärtor','Linser','Svarta bönor','Quorn','Ägg','Cashewnötter'],
+      carb:['Ris','Pasta','Potatis','Couscous','Bulgur','Tortilla','Quinoa','Nudlar'],
+      veggie:['Paprika','Broccoli','Morot','Zucchini','Champinjoner','Rödlök','Spenat','Majs','Aubergine','Vitkål'],
+      sauce:['Teriyaki','Vitlökssmör','Curry','Tomatsås','Pesto','Gräddsås','Chimichurri','Soja & ingefära'],
+      wild:['Chili & choklad','Ananas','Fetaost','Kokos','Rostad vitlök','Extra chili','Lime & koriander','Karamelliserad lök','Pinjenötter','Fritt val – du väljer']
+    },
+    asian: { label:'Asiatiskt',
+      protein:['Kyckling','Räkor','Tofu','Fläskkarré','Anka','Nötkött'],
+      carb:['Jasminris','Äggnudlar','Glasnudlar','Baobröd','Klibbris','Ramennudlar'],
+      veggie:['Pak choi','Morot','Vårlök','Shiitake','Sockerärtor','Majs','Paprika','Broccoli'],
+      sauce:['Teriyaki','Soja & ingefära','Sweet chili','Oystersås','Sesam & chili','Röd curry'],
+      wild:['Sesamfrön','Jordnötter','Chiliolja','Lime','Koriander','Ananas','Kokosmjölk','Fritt val – du väljer']
+    },
+    seafood: { label:'Fisk & skaldjur',
+      protein:['Lax','Torsk','Räkor','Musslor','Tonfisk','Scampi','Kammusslor'],
+      carb:['Ris','Potatis','Pasta','Couscous','Focaccia','Quinoa'],
+      veggie:['Fänkål','Zucchini','Cherrytomater','Sparris','Spenat','Paprika','Rödlök','Gurka'],
+      sauce:['Vitlökssmör','Citron & smör','Vitvinssås','Salsa verde','Tomatsås','Currysås'],
+      wild:['Kapris','Oliver','Chili','Dill','Parmesan','Pinjenötter','Fritt val – du väljer']
+    }
+  };
+
+  var THEME_ORDER = ['classic','vegetarian','asian','seafood'];
+
+  var STATIONS = [
+    {key:'protein', label:'Protein', icon:'🍗', picks:1},
+    {key:'carb', label:'Kolhydrat', icon:'🍚', picks:1},
+    {key:'veggie', label:'Grönsaker', icon:'🥦', picks:3},
+    {key:'sauce', label:'Sås', icon:'🥣', picks:1},
+    {key:'wild', label:'Extra wild', icon:'✨', picks:1}
+  ];
+
+  var PANTRY_CANDIDATES = ['Salt','Peppar','Olivolja','Smör','Vitlök','Gul lök','Ägg','Mjöl','Socker','Soja','Vinäger','Buljong','Ströbröd','Citron'];
+
+  function loadJSON(key, fallback){
+    try{
+      var raw = localStorage.getItem(key);
+      if(!raw) return fallback;
+      return JSON.parse(raw);
+    }catch(e){ return fallback; }
+  }
+  function saveJSON(key, val){
+    try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){ /* ignore */ }
+  }
+
+  var state = {
+    theme: loadJSON('sfd_theme', 'classic'),
+    custom: loadJSON('sfd_custom', {}),
+    pantry: loadJSON('sfd_pantry', []),
+    favorites: loadJSON('sfd_favorites', []),
+    history: loadJSON('sfd_history', []),
+    stationIdx: 0,
+    subPick: 0,
+    results: {protein:null, carb:null, veggie:[], sauce:null, wild:null},
+    rotation: {protein:0, carb:0, veggie:0, sauce:0, wild:0},
+    spinning:false,
+    editingKey: null,
+    editTab: 'protein',
+    historyLogged:false
+  };
+
+  function dc(s){ if(!s) return s; return s.charAt(0).toLowerCase()+s.slice(1); }
+  function cap(s){ if(!s) return s; return s.charAt(0).toUpperCase()+s.slice(1); }
+  function shuffle(arr){
+    var a = arr.slice();
+    for(var i=a.length-1;i>0;i--){
+      var j = Math.floor(Math.random()*(i+1));
+      var tmp=a[i]; a[i]=a[j]; a[j]=tmp;
+    }
+    return a;
+  }
+  function formatDate(ts){
+    var d = new Date(ts);
+    return d.toLocaleDateString('sv-SE', {day:'numeric', month:'short'}) + ' ' + d.toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'});
+  }
+
+  function getPool(key){
+    if(state.custom[key] && state.custom[key].length) return state.custom[key];
+    return THEMES[state.theme][key];
+  }
+
+  function allStationsDone(){
+    return STATIONS.every(function(st){
+      if(st.key === 'veggie') return state.results.veggie.length >= st.picks;
+      return !!state.results[st.key];
+    });
+  }
+
+  function currentItemsList(){
+    return [state.results.protein, state.results.carb].concat(state.results.veggie, [state.results.sauce, state.results.wild]);
+  }
+
+  function currentStation(){ return STATIONS[state.stationIdx]; }
+
+  // ---------- FAVORITES / HISTORY ----------
+  function saveFavorite(recipe){
+    var entry = { id: Date.now()+'-'+Math.random().toString(36).slice(2,7), date: Date.now(), theme: state.theme, items: currentItemsList(), recipe: recipe };
+    state.favorites.unshift(entry);
+    saveJSON('sfd_favorites', state.favorites);
+    return entry.id;
+  }
+  function removeFavorite(id){
+    state.favorites = state.favorites.filter(function(f){ return f.id!==id; });
+    saveJSON('sfd_favorites', state.favorites);
+  }
+  function logHistory(){
+    var entry = { id: Date.now()+'-'+Math.random().toString(36).slice(2,7), date: Date.now(), theme: state.theme, items: currentItemsList() };
+    state.history.unshift(entry);
+    if(state.history.length>15) state.history.length = 15;
+    saveJSON('sfd_history', state.history);
+  }
+
+  // ---------- RENDER: THEME ROW ----------
+  function renderThemeRow(){
+    var row = document.getElementById('themeRow');
+    row.innerHTML = '';
+    THEME_ORDER.forEach(function(key){
+      var chip = document.createElement('button');
+      chip.className = 'chip' + (state.theme===key ? ' active':'');
+      chip.textContent = THEMES[key].label;
+      chip.onclick = function(){
+        if(state.spinning) return;
+        state.theme = key;
+        saveJSON('sfd_theme', key);
+        renderThemeRow();
+        renderStage();
+      };
+      row.appendChild(chip);
+    });
+  }
+
+  // ---------- RENDER: STEPPER ----------
+  function renderStepper(){
+    var el = document.getElementById('stepper');
+    el.innerHTML = '';
+    STATIONS.forEach(function(st, i){
+      var done = st.key==='veggie' ? state.results.veggie.length>=st.picks : !!state.results[st.key];
+      var wrap = document.createElement('div');
+      wrap.className = 'step' + (i===state.stationIdx?' current':'') + (done?' done':'');
+      wrap.innerHTML = '<div class="dot">'+(done?'✓':st.icon)+'</div><div class="lbl">'+st.label+(st.picks>1?' x'+st.picks:'')+'</div>';
+      el.appendChild(wrap);
+    });
+  }
+
+  // ---------- WHEEL SVG ----------
+  function polar(cx,cy,r,angleDeg){
+    var rad = (angleDeg-90) * Math.PI/180;
+    return { x: cx + r*Math.cos(rad), y: cy + r*Math.sin(rad) };
+  }
+  function arcPath(cx,cy,r,a0,a1){
+    var s = polar(cx,cy,r,a0), e = polar(cx,cy,r,a1);
+    var large = (a1-a0) <= 180 ? 0 : 1;
+    return ['M',cx,cy,'L',s.x,s.y,'A',r,r,0,large,1,e.x,e.y,'Z'].join(' ');
+  }
+  function buildWheelSVG(items){
+    var n = items.length;
+    var seg = 360/n;
+    var cx=150, cy=150, r=145;
+    var fontSize = n>10?9:(n>7?10.5:12.5);
+    var svgNS = "http://www.w3.org/2000/svg";
+    var svg = document.createElementNS(svgNS,'svg');
+    svg.setAttribute('viewBox','0 0 300 300');
+    svg.setAttribute('class','wheel');
+    for(var i=0;i<n;i++){
+      var a0=i*seg, a1=(i+1)*seg, mid=a0+seg/2;
+      var path = document.createElementNS(svgNS,'path');
+      path.setAttribute('d', arcPath(cx,cy,r,a0,a1));
+      path.setAttribute('fill', COLORS[i%COLORS.length]);
+      path.setAttribute('stroke', '#2A1730');
+      path.setAttribute('stroke-width','2');
+      svg.appendChild(path);
+
+      var pt = polar(cx,cy,r*0.62,mid);
+      var text = document.createElementNS(svgNS,'text');
+      text.setAttribute('x', pt.x);
+      text.setAttribute('y', pt.y);
+      text.setAttribute('text-anchor','middle');
+      text.setAttribute('dominant-baseline','middle');
+      text.setAttribute('font-size', fontSize);
+      text.setAttribute('font-family',"'Nunito Sans', sans-serif");
+      text.setAttribute('font-weight','800');
+      text.setAttribute('fill','#2A1730');
+      text.setAttribute('transform','rotate('+(mid-90)+' '+pt.x+' '+pt.y+')');
+      text.textContent = items[i];
+      svg.appendChild(text);
+    }
+    return svg;
+  }
+
+  // ---------- STAGE ----------
+  function renderStage(){
+    var area = document.getElementById('gameArea');
+    area.innerHTML = '';
+
+    if(allStationsDone()){
+      if(!state.historyLogged){
+        logHistory();
+        state.historyLogged = true;
+      }
+      renderFinal(area);
+      renderStepper();
+      renderTray();
+      return;
+    }
+
+    var st = currentStation();
+    var pool = getPool(st.key);
+
+    var stage = document.createElement('div');
+    stage.className = 'stage';
+
+    var title = document.createElement('h2');
+    title.className = 'stage-title';
+    title.textContent = st.icon + ' ' + st.label;
+    stage.appendChild(title);
+
+    if(st.picks>1){
+      var sub = document.createElement('p');
+      sub.className='stage-sub';
+      sub.textContent = 'Snurrning ' + (state.subPick+1) + ' av ' + st.picks;
+      stage.appendChild(sub);
+    }
+
+    var wheelWrap = document.createElement('div');
+    wheelWrap.className = 'wheel-wrap';
+    var pointer = document.createElement('div');
+    pointer.className='pointer';
+    wheelWrap.appendChild(pointer);
+    var outer = document.createElement('div');
+    outer.className='wheel-outer';
+    var svg = buildWheelSVG(pool);
+    svg.style.transform = 'rotate(' + (state.rotation[st.key]||0) + 'deg)';
+    outer.appendChild(svg);
+    wheelWrap.appendChild(outer);
+    var hub = document.createElement('div');
+    hub.className='hub';
+    hub.textContent = st.icon;
+    wheelWrap.appendChild(hub);
+    stage.appendChild(wheelWrap);
+
+    var flash = document.createElement('div');
+    flash.className='result-flash';
+    flash.id='resultFlash';
+    stage.appendChild(flash);
+
+    var actions = document.createElement('div');
+    actions.className='stage-actions';
+    var spinBtn = document.createElement('button');
+    spinBtn.className='spin-btn';
+    spinBtn.textContent='Snurra!';
+    spinBtn.onclick = function(){ spin(st.key, pool, svg); };
+    actions.appendChild(spinBtn);
+    stage.appendChild(actions);
+
+    area.appendChild(stage);
+    renderStepper();
+    renderTray();
+  }
+
+  function pickIndexAvoiding(pool, avoidList){
+    var candidates = [];
+    for(var i=0;i<pool.length;i++){ if(avoidList.indexOf(pool[i])===-1) candidates.push(i); }
+    if(candidates.length===0) candidates = pool.map(function(_,i){return i;});
+    return candidates[Math.floor(Math.random()*candidates.length)];
+  }
+
+  function spin(key, pool, svgEl){
+    if(state.spinning) return;
+    state.spinning = true;
+    document.querySelectorAll('.spin-btn').forEach(function(b){ b.setAttribute('disabled','true'); });
+    var flash = document.getElementById('resultFlash');
+    if(flash) flash.innerHTML = '&nbsp;';
+
+    var seg = 360/pool.length;
+    var avoid = key==='veggie' ? state.results.veggie : [];
+    var targetIndex = pickIndexAvoiding(pool, avoid);
+    var jitter = (Math.random()-0.5)*seg*0.6;
+    var targetAngleFromTop = targetIndex*seg + seg/2 + jitter;
+    var extraSpins = 5 + Math.random()*2;
+
+    var current = state.rotation[key] || 0;
+    var baseRemainder = current % 360;
+    var delta = (360 - targetAngleFromTop) - baseRemainder;
+    while(delta < 0) delta += 360;
+    var newRotation = current + delta + extraSpins*360;
+    state.rotation[key] = newRotation;
+
+    svgEl.style.transition = 'transform 3.1s cubic-bezier(.13,.7,.24,1)';
+    svgEl.style.transform = 'rotate('+newRotation+'deg)';
+
+    setTimeout(function(){
+      var picked = pool[targetIndex];
+      onLanded(key, picked);
+      state.spinning = false;
+      document.querySelectorAll('.spin-btn').forEach(function(b){ b.removeAttribute('disabled'); });
+    }, 3200);
+  }
+
+  function onLanded(key, value){
+    var st = STATIONS.find(function(s){return s.key===key;});
+    if(st.picks>1){
+      state.results[key].push(value);
+      state.subPick++;
+      var flash = document.getElementById('resultFlash');
+      if(flash) flash.innerHTML = 'Du fick <b>'+value+'</b>!';
+      renderTray();
+      if(state.subPick >= st.picks){
+        setTimeout(function(){
+          state.subPick = 0;
+          advanceStation();
+        }, 850);
+      } else {
+        // re-render same stage for next sub-pick, keep flash briefly
+        setTimeout(renderStage, 900);
+      }
+    } else {
+      state.results[key] = value;
+      var flash2 = document.getElementById('resultFlash');
+      if(flash2) flash2.innerHTML = 'Du fick <b>'+value+'</b>!';
+      renderTray();
+      setTimeout(function(){ advanceStation(); }, 900);
+    }
+  }
+
+  function advanceStation(){
+    if(state.stationIdx < STATIONS.length-1){
+      state.stationIdx++;
+    }
+    renderStage();
+  }
+
+  function rerollStation(key){
+    if(state.spinning) return;
+    var st = STATIONS.find(function(s){return s.key===key;});
+    if(st.picks>1){ state.results[key] = []; state.subPick = 0; }
+    else { state.results[key] = null; }
+    state.historyLogged = false;
+    state.stationIdx = STATIONS.findIndex(function(s){return s.key===key;});
+    renderStage();
+  }
+
+  // ---------- TRAY ----------
+  function renderTray(){
+    var grid = document.getElementById('trayGrid');
+    grid.innerHTML = '';
+    STATIONS.forEach(function(st){
+      var slot = document.createElement('div');
+      var filled = st.picks>1 ? state.results.veggie.length>0 : !!state.results[st.key];
+      slot.className = 'tray-slot' + (filled?' filled':'');
+      var valText;
+      if(st.key==='veggie'){
+        valText = state.results.veggie.length ? state.results.veggie.join(', ') : st.label;
+      } else {
+        valText = state.results[st.key] || st.label;
+      }
+      slot.innerHTML = '<div class="ic">'+st.icon+'</div><div class="val">'+valText+'</div>';
+      if(filled){
+        var reroll = document.createElement('button');
+        reroll.className='reroll';
+        reroll.textContent='↻';
+        reroll.title='Snurra om';
+        reroll.onclick = function(k){ return function(){ rerollStation(k); }; }(st.key);
+        slot.appendChild(reroll);
+      }
+      grid.appendChild(slot);
+    });
+  }
+
+  // ---------- RECIPES ----------
+  function craftRecipes(){
+    var protein = state.results.protein, carb = state.results.carb,
+        veggies = state.results.veggie, sauce = state.results.sauce, wild = state.results.wild;
+    var veggieLower = veggies.map(dc).join(', ');
+    var pantryList = state.pantry;
+    var pantryLine = pantryList.length ? ('Smaka av med ' + pantryList.map(dc).join(', ') + '.') : 'Smaka av med salt och peppar.';
+
+    var r1 = {
+      title: cap(dc(wild)) + ' ' + dc(protein) + ' med ' + dc(carb) + ' och ' + dc(sauce),
+      meta: '~25 min · 2 portioner · panna/wok',
+      steps: [
+        'Hetta upp olja i en stekpanna eller wok på hög värme.',
+        'Bryn '+dc(protein)+' 4-6 minuter tills det fått fin färg. Lägg åt sidan.',
+        'Tillaga '+dc(carb)+' separat enligt paketets anvisning (eller i samma panna om det passar, t.ex. nudlar).',
+        'Fräs '+veggieLower+' i samma panna 3-4 minuter tills grönsakerna mjuknat men fortfarande har tuggmotstånd.',
+        'Lägg tillbaka '+dc(protein)+', rör ner '+dc(sauce)+' och låt allt puttra ihop 2-3 minuter.',
+        'Toppa med '+dc(wild)+' precis innan servering – det är din twist för kvällen.',
+        pantryLine
+      ]
+    };
+    var r2 = {
+      title: cap(dc(carb)) + '-bowl med ' + dc(protein) + ' och ' + dc(sauce),
+      meta: '~20 min · 2 portioner · skål',
+      steps: [
+        'Koka eller värm '+dc(carb)+' och lägg som bas i en skål.',
+        'Stek eller ugnsbaka '+dc(protein)+' 8-10 minuter tills genomstekt och skär i bitar.',
+        'Skär eller riv '+veggieLower+', rått eller lätt sauterat, och lägg ovanpå basen.',
+        'Ringla över '+dc(sauce)+' generöst över hela skålen.',
+        'Avsluta med '+dc(wild)+' som crunch eller smakskott.',
+        pantryLine
+      ]
+    };
+    var r3 = {
+      title: 'Ugnsbakad ' + dc(protein) + ' med ' + dc(carb) + ' och ' + dc(sauce),
+      meta: '~35 min · 2 portioner · ugn, en plåt',
+      steps: [
+        'Sätt ugnen på 200°C.',
+        'Lägg '+dc(protein)+' och '+veggieLower+' på en plåt, ringla över olja och rör runt.',
+        'Baka i mitten av ugnen 20-25 minuter tills protein är genomstekt och grönsakerna fått lite färg.',
+        'Under tiden, tillaga '+dc(carb)+' enligt paketets anvisning.',
+        'Blanda '+dc(sauce)+' med stekskyn från plåten och häll över när allt är klart.',
+        'Toppa med '+dc(wild)+' direkt innan servering.',
+        pantryLine
+      ]
+    };
+    return shuffle([r1, r2, r3]);
+  }
+
+  function renderFinal(area){
+    var card = document.createElement('div');
+    card.className='final-card';
+    var h2 = document.createElement('h2');
+    h2.textContent = 'Kvällens tallrik är klar! 🎉';
+    var p = document.createElement('p');
+    p.textContent = 'Här är vad hjulen bestämde åt dig:';
+    card.appendChild(h2); card.appendChild(p);
+
+    var tagWrap = document.createElement('div');
+    tagWrap.className='plate-summary';
+    currentItemsList().forEach(function(item){
+      var tag=document.createElement('span'); tag.className='tag'; tag.textContent=item; tagWrap.appendChild(tag);
+    });
+    card.appendChild(tagWrap);
+
+    var recipes = craftRecipes();
+    recipes.forEach(function(r){
+      var rc = document.createElement('div');
+      rc.className='recipe-card';
+      var h3=document.createElement('h3'); h3.textContent=r.title;
+      var meta=document.createElement('p'); meta.className='recipe-meta'; meta.textContent=r.meta;
+      var ol=document.createElement('ol');
+      r.steps.forEach(function(s){ var li=document.createElement('li'); li.textContent=s; ol.appendChild(li); });
+      var saveBtn=document.createElement('button');
+      saveBtn.className='save-fav-btn';
+      saveBtn.textContent='❤ Spara som favorit';
+      saveBtn.onclick = function(){
+        saveFavorite(r);
+        saveBtn.textContent='✓ Sparad';
+        saveBtn.classList.add('saved');
+        saveBtn.disabled = true;
+      };
+      rc.appendChild(h3); rc.appendChild(meta); rc.appendChild(ol); rc.appendChild(saveBtn);
+      card.appendChild(rc);
+    });
+
+    var actions = document.createElement('div');
+    actions.className='stage-actions';
+    var again = document.createElement('button');
+    again.className='spin-btn'; again.textContent='Nya receptidéer';
+    again.onclick = function(){ renderStage(); };
+    var restart = document.createElement('button');
+    restart.className='ghost-btn'; restart.textContent='Snurra om allt';
+    restart.onclick = fullReset;
+    actions.appendChild(again); actions.appendChild(restart);
+    card.appendChild(actions);
+
+    area.appendChild(card);
+  }
+
+  function fullReset(){
+    state.stationIdx=0; state.subPick=0;
+    state.results = {protein:null, carb:null, veggie:[], sauce:null, wild:null};
+    state.rotation = {protein:0, carb:0, veggie:0, sauce:0, wild:0};
+    state.historyLogged = false;
+    renderStage();
+  }
+
+  // ---------- PANTRY MODAL ----------
+  function openPantryModal(){
+    var root = document.getElementById('modalRoot');
+    var overlay = document.createElement('div');
+    overlay.className='modal-overlay';
+    overlay.onclick = function(e){ if(e.target===overlay) root.innerHTML=''; };
+    var modal = document.createElement('div');
+    modal.className='modal';
+    modal.innerHTML = '<button class="modal-close" aria-label="Stäng">&times;</button>'+
+      '<h2>Mitt skafferi</h2>'+
+      '<p class="hint">Välj det du alltid har hemma – det räknas in i recepten.</p>';
+    var grid = document.createElement('div');
+    grid.className='pantry-grid';
+    PANTRY_CANDIDATES.forEach(function(item){
+      var chip = document.createElement('button');
+      var on = state.pantry.indexOf(item)!==-1;
+      chip.className='pantry-chip'+(on?' on':'');
+      chip.textContent=item;
+      chip.onclick = function(){
+        var idx = state.pantry.indexOf(item);
+        if(idx===-1) state.pantry.push(item); else state.pantry.splice(idx,1);
+        saveJSON('sfd_pantry', state.pantry);
+        chip.classList.toggle('on');
+      };
+      grid.appendChild(chip);
+    });
+    modal.appendChild(grid);
+    modal.querySelector('.modal-close').onclick = function(){ root.innerHTML=''; };
+    overlay.appendChild(modal);
+    root.appendChild(overlay);
+  }
+
+  // ---------- EDIT WHEELS MODAL ----------
+  function openEditModal(){
+    state.editTab = state.editTab || 'protein';
+    var root = document.getElementById('modalRoot');
+    function draw(){
+      root.innerHTML='';
+      var overlay = document.createElement('div');
+      overlay.className='modal-overlay';
+      overlay.onclick = function(e){ if(e.target===overlay) root.innerHTML=''; };
+      var modal = document.createElement('div');
+      modal.className='modal';
+      modal.innerHTML = '<button class="modal-close" aria-label="Stäng">&times;</button>'+
+        '<h2>Anpassa hjul</h2>'+
+        '<p class="hint">Lägg till, ta bort eller nollställ innehållet i varje hjul.</p>';
+
+      var tabs = document.createElement('div');
+      tabs.className='cat-tabs';
+      STATIONS.forEach(function(st){
+        var t = document.createElement('button');
+        t.className='cat-tab'+(state.editTab===st.key?' active':'');
+        t.textContent = st.icon+' '+st.label;
+        t.onclick = function(){ state.editTab = st.key; draw(); };
+        tabs.appendChild(t);
+      });
+      modal.appendChild(tabs);
+
+      var pool = getPool(state.editTab);
+      var list = document.createElement('div');
+      list.className='edit-list';
+      pool.forEach(function(item){
+        var chip = document.createElement('span');
+        chip.className='edit-chip';
+        chip.innerHTML = '<span></span>';
+        chip.querySelector('span').textContent = item;
+        var rm = document.createElement('button');
+        rm.textContent='×';
+        rm.onclick = function(){
+          var base = (state.custom[state.editTab] && state.custom[state.editTab].length) ? state.custom[state.editTab].slice() : THEMES[state.theme][state.editTab].slice();
+          base = base.filter(function(x){ return x!==item; });
+          state.custom[state.editTab] = base;
+          saveJSON('sfd_custom', state.custom);
+          draw();
+        };
+        chip.appendChild(rm);
+        list.appendChild(chip);
+      });
+      modal.appendChild(list);
+
+      var addRow = document.createElement('div');
+      addRow.className='add-row';
+      var input = document.createElement('input');
+      input.placeholder='Lägg till t.ex. "Gnocchi"';
+      var addBtn = document.createElement('button');
+      addBtn.textContent='Lägg till';
+      addBtn.onclick = function(){
+        var val = input.value.trim();
+        if(!val) return;
+        var base = (state.custom[state.editTab] && state.custom[state.editTab].length) ? state.custom[state.editTab].slice() : THEMES[state.theme][state.editTab].slice();
+        base.push(val);
+        state.custom[state.editTab] = base;
+        saveJSON('sfd_custom', state.custom);
+        input.value='';
+        draw();
+      };
+      addRow.appendChild(input); addRow.appendChild(addBtn);
+      modal.appendChild(addRow);
+
+      var resetLine = document.createElement('button');
+      resetLine.className='reset-line';
+      resetLine.textContent='Återställ till tema-standard';
+      resetLine.onclick = function(){
+        delete state.custom[state.editTab];
+        saveJSON('sfd_custom', state.custom);
+        draw();
+      };
+      modal.appendChild(resetLine);
+
+      modal.querySelector('.modal-close').onclick = function(){ root.innerHTML=''; renderStage(); };
+      overlay.appendChild(modal);
+      root.appendChild(overlay);
+    }
+    draw();
+  }
+
+  // ---------- FAVORITES MODAL ----------
+  function openFavoritesModal(){
+    var root = document.getElementById('modalRoot');
+    function draw(){
+      root.innerHTML='';
+      var overlay = document.createElement('div');
+      overlay.className='modal-overlay';
+      overlay.onclick = function(e){ if(e.target===overlay) root.innerHTML=''; };
+      var modal = document.createElement('div');
+      modal.className='modal';
+      modal.innerHTML = '<button class="modal-close" aria-label="Stäng">&times;</button>'+
+        '<h2>Favoriter</h2>'+
+        '<p class="hint">Recept du sparat från tidigare kvällar.</p>';
+
+      if(!state.favorites.length){
+        var empty = document.createElement('p');
+        empty.className='empty-hint';
+        empty.textContent = 'Inga sparade favoriter än. Spara ett recept från slutskärmen!';
+        modal.appendChild(empty);
+      } else {
+        state.favorites.forEach(function(fav){
+          var item = document.createElement('div');
+          item.className='fav-item';
+          var rm = document.createElement('button');
+          rm.className='fav-remove'; rm.textContent='×'; rm.title='Ta bort';
+          rm.setAttribute('aria-label','Ta bort favorit');
+          rm.onclick = function(){ removeFavorite(fav.id); draw(); };
+          item.appendChild(rm);
+          var dateEl = document.createElement('p'); dateEl.className='fav-date'; dateEl.textContent = formatDate(fav.date);
+          item.appendChild(dateEl);
+          var h3 = document.createElement('h3'); h3.textContent = fav.recipe.title;
+          item.appendChild(h3);
+          var tagsWrap = document.createElement('div'); tagsWrap.className='tags-mini';
+          fav.items.forEach(function(it){ var t=document.createElement('span'); t.className='tag-mini'; t.textContent=it; tagsWrap.appendChild(t); });
+          item.appendChild(tagsWrap);
+          var ol = document.createElement('ol');
+          fav.recipe.steps.forEach(function(s){ var li=document.createElement('li'); li.textContent=s; ol.appendChild(li); });
+          item.appendChild(ol);
+          modal.appendChild(item);
+        });
+      }
+
+      modal.querySelector('.modal-close').onclick = function(){ root.innerHTML=''; };
+      overlay.appendChild(modal);
+      root.appendChild(overlay);
+    }
+    draw();
+  }
+
+  // ---------- HISTORY MODAL ----------
+  function openHistoryModal(){
+    var root = document.getElementById('modalRoot');
+    function draw(){
+      root.innerHTML='';
+      var overlay = document.createElement('div');
+      overlay.className='modal-overlay';
+      overlay.onclick = function(e){ if(e.target===overlay) root.innerHTML=''; };
+      var modal = document.createElement('div');
+      modal.className='modal';
+      modal.innerHTML = '<button class="modal-close" aria-label="Stäng">&times;</button>'+
+        '<h2>Historik</h2>'+
+        '<p class="hint">De senaste kvällarnas tallrikar – bra att kolla så du inte kör samma sak två gånger i rad.</p>';
+
+      if(!state.history.length){
+        var empty = document.createElement('p');
+        empty.className='empty-hint';
+        empty.textContent = 'Ingen historik än. Snurra fram din första tallrik!';
+        modal.appendChild(empty);
+      } else {
+        state.history.forEach(function(h){
+          var item = document.createElement('div');
+          item.className='fav-item';
+          var dateEl = document.createElement('p'); dateEl.className='fav-date'; dateEl.textContent = formatDate(h.date) + ' · ' + THEMES[h.theme].label;
+          item.appendChild(dateEl);
+          var tagsWrap = document.createElement('div'); tagsWrap.className='tags-mini';
+          h.items.forEach(function(it){ var t=document.createElement('span'); t.className='tag-mini'; t.textContent=it; tagsWrap.appendChild(t); });
+          item.appendChild(tagsWrap);
+          modal.appendChild(item);
+        });
+        var clearLine = document.createElement('button');
+        clearLine.className='reset-line';
+        clearLine.textContent='Rensa historik';
+        clearLine.onclick = function(){ state.history=[]; saveJSON('sfd_history', state.history); draw(); };
+        modal.appendChild(clearLine);
+      }
+
+      modal.querySelector('.modal-close').onclick = function(){ root.innerHTML=''; };
+      overlay.appendChild(modal);
+      root.appendChild(overlay);
+    }
+    draw();
+  }
+
+  // ---------- INIT ----------
+  document.getElementById('pantryBtn').onclick = openPantryModal;
+  document.getElementById('editBtn').onclick = openEditModal;
+  document.getElementById('favBtn').onclick = openFavoritesModal;
+  document.getElementById('historyBtn').onclick = openHistoryModal;
+  document.getElementById('resetBtn').onclick = fullReset;
+
+  renderThemeRow();
+  renderStage();
+})();
+</script>
+</body>
+</html>
