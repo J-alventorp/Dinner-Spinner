@@ -12,7 +12,11 @@ En liten webbapp där du snurrar fram kvällens middag istället för att bestä
 - Allt sparas lokalt i webbläsaren (`localStorage`) – inget konto behövs
 
 ## Köra lokalt
-Öppna `index.html` direkt i en webbläsare, eller servera mappen med valfri statisk webbserver.
+```
+npm install
+npm run dev
+```
+Bygg för produktion med `npm run build` (output i `dist/`), förhandsgranska med `npm run preview`.
 
 ## Status
-Enkel MVP – vanilla HTML/CSS/JS utan byggsteg eller ramverk.
+Byggd med React + Vite. All persistens sker fortfarande lokalt i webbläsaren (`localStorage`) – inget konto eller backend behövs.
