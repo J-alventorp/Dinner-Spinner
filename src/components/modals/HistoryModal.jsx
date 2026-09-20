@@ -13,14 +13,22 @@ export default function HistoryModal({ history, onClear, onClose }){
           <p className="empty-hint">Ingen historik än. Snurra fram din första tallrik!</p>
         ) : (
           <>
-            {history.map(h => (
-              <div className="fav-item" key={h.id}>
-                <p className="fav-date">{formatDate(h.date)} · {THEMES[h.theme].label}</p>
-                <div className="tags-mini">
-                  {h.items.map((it, i) => <span className="tag-mini" key={it + i}>{it}</span>)}
+            {history.map(h => {
+              // Äldre poster saknar `extras`, och ett tema kan ha bytt namn
+              // mellan versioner — därför läses allt defensivt här.
+              const themeLabel = (THEMES[h.theme] && THEMES[h.theme].label) || 'Okänt tema';
+              const items = h.items || [];
+              const extras = h.extras || [];
+              return (
+                <div className="fav-item" key={h.id}>
+                  <p className="fav-date">{formatDate(h.date)} · {themeLabel}</p>
+                  <div className="tags-mini">
+                    {items.map((it, i) => <span className="tag-mini" key={it + i}>{it}</span>)}
+                    {extras.map((it, i) => <span className="tag-mini gold" key={'x' + it + i}>🎁 {it}</span>)}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
             <button className="reset-line" onClick={onClear}>Rensa historik</button>
           </>
         )}

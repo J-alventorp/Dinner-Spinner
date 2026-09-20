@@ -11,19 +11,26 @@ export default function FavoritesModal({ favorites, onRemove, onClose }){
         {!favorites.length ? (
           <p className="empty-hint">Inga sparade favoriter än. Spara ett recept från slutskärmen!</p>
         ) : (
-          favorites.map(fav => (
-            <div className="fav-item" key={fav.id}>
-              <button className="fav-remove" title="Ta bort" aria-label="Ta bort favorit" onClick={() => onRemove(fav.id)}>×</button>
-              <p className="fav-date">{formatDate(fav.date)}</p>
-              <h3>{fav.recipe.title}</h3>
-              <div className="tags-mini">
-                {fav.items.map((it, i) => <span className="tag-mini" key={it + i}>{it}</span>)}
+          favorites.map(fav => {
+            // Favoriter sparade före bonusrutorna saknar `extras`.
+            const recipe = fav.recipe || { title: 'Sparat recept', steps: [] };
+            const items = fav.items || [];
+            const extras = fav.extras || [];
+            return (
+              <div className="fav-item" key={fav.id}>
+                <button className="fav-remove" title="Ta bort" aria-label="Ta bort favorit" onClick={() => onRemove(fav.id)}>×</button>
+                <p className="fav-date">{formatDate(fav.date)}</p>
+                <h3>{recipe.title}</h3>
+                <div className="tags-mini">
+                  {items.map((it, i) => <span className="tag-mini" key={it + i}>{it}</span>)}
+                  {extras.map((it, i) => <span className="tag-mini gold" key={'x' + it + i}>🎁 {it}</span>)}
+                </div>
+                <ol>
+                  {(recipe.steps || []).map((s, i) => <li key={i}>{s}</li>)}
+                </ol>
               </div>
-              <ol>
-                {fav.recipe.steps.map((s, i) => <li key={i}>{s}</li>)}
-              </ol>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

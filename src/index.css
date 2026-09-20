@@ -54,12 +54,22 @@ body{
   justify-content:center;
   padding: 18px 12px 60px;
 }
+/* React monterar i #root, så det är #root — inte .app — som är flexbarnet
+   till body. Utan min-width:0 vägrar det krympa under sitt bredaste
+   innehåll, och med sex teman och fyra lägen ger det vågrät scroll på hela
+   sidan i stället för inuti chip-raderna, som scrollar själva. */
+#root{
+  width:100%;
+  max-width:480px;
+  min-width:0;
+}
 .app{
   width:100%;
   max-width:480px;
   display:flex;
   flex-direction:column;
   gap:16px;
+  min-width:0;
 }
 a, button{ font-family:inherit; }
 button{ cursor:pointer; }
@@ -104,6 +114,10 @@ header{ text-align:center; padding-top:4px; }
 .theme-row{
   display:flex; gap:8px; overflow-x:auto; padding:2px 2px 6px;
   scrollbar-width:none;
+  /* Utan min-width:0 vägrar raden krympa under sitt innehåll (flexboxens
+     automatiska minimistorlek) och tvingar fram vågrät scroll på hela
+     sidan i stället för inuti raden. */
+  min-width:0;
 }
 .theme-row::-webkit-scrollbar{ display:none; }
 .chip{
@@ -208,19 +222,57 @@ header{ text-align:center; padding-top:4px; }
   z-index:4;
 }
 .wheel-outer{
+  position:relative;
   width:100%;height:100%;
   border-radius:50%;
   background: var(--bg-alt);
   padding:8px;
   box-shadow: 0 10px 22px var(--shadow), inset 0 0 0 3px var(--ring);
 }
+/* Roterande kantljus medan hjulet snurrar — ligger bakom själva hjulet så
+   det syns som en glödande ring i ytterkanten. */
+.wheel-outer::after{
+  content:'';
+  position:absolute; inset:-6px;
+  border-radius:50%;
+  background: conic-gradient(var(--accent), transparent 25%, var(--wheel-6) 50%, transparent 75%, var(--accent));
+  opacity:0;
+  transition:opacity .3s ease;
+  z-index:-1;
+  filter: blur(6px);
+}
+.wheel-outer.lit::after{
+  opacity:.85;
+  animation: rimSpin 1.4s linear infinite;
+}
+@keyframes rimSpin{
+  to{ transform: rotate(360deg); }
+}
+/* Varaktigheten kommer från JS via --spin-ms, som Wheel sätter per hjul.
+   Turbo och jackpot behöver olika tider på hjul som visas samtidigt, och
+   skicklighetslägets inbromsning är kortare än ett vanligt snurr. */
 svg.wheel{
   width:100%; height:100%;
   border-radius:50%;
   display:block;
   transform: rotate(0deg);
-  transition: transform 3.1s cubic-bezier(.13,.7,.24,1);
+  transition: transform var(--spin-ms, 3100ms) cubic-bezier(.13,.7,.24,1);
 }
+/* Friersnurret drivs av rAF bildruta för bildruta — en transition ovanpå
+   det skulle bara släpa efter. */
+svg.wheel.wheel-free{ transition: none; }
+
+@keyframes winnerPulse{
+  0%,100%{ opacity:1; }
+  50%{ opacity:.45; }
+}
+.slice-winner{ animation: winnerPulse 1s ease-in-out infinite; }
+
+@keyframes goldenGlow{
+  0%,100%{ opacity:.65; }
+  50%{ opacity:1; }
+}
+.slice-golden{ animation: goldenGlow .9s ease-in-out infinite; }
 .hub{
   position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
   width:54px;height:54px;border-radius:50%;
@@ -266,7 +318,7 @@ svg.wheel{
   display:flex; align-items:center; justify-content:center;
   text-align:center;
   border-radius:50%;
-  background:rgba(10,4,12,0.72);
+  background: radial-gradient(circle, rgba(10,4,12,0.9) 40%, rgba(10,4,12,0.55) 62%, transparent 76%);
   font-family:var(--font-display);
   font-size:26px;
   color:var(--cream);
@@ -279,6 +331,7 @@ svg.wheel{
 }
 .result-banner.show{ opacity:1; transform:scale(1); }
 .result-banner b{ color:var(--accent); font-size:1.25em; }
+.result-pill{ max-width:78%; }
 
 /* TRAY */
 .tray{
@@ -419,7 +472,300 @@ footer{ text-align:center; font-size:11.5px; color:var(--cream-dim); margin-top:
   position:fixed; inset:0; pointer-events:none; z-index:100;
 }
 
+/* ============================================================
+   LEKFULLHET: lägen, bonus, minispel, gyllene läget
+   ============================================================ */
+
+/* STATISTIK-BADGE */
+.stats-badge{
+  display:flex; justify-content:center; gap:10px; flex-wrap:wrap;
+  font-size:11px; font-weight:800; color:var(--cream-dim);
+  margin-top:-6px;
+}
+.stats-badge span{
+  background:var(--surface); border:1px solid var(--ring);
+  border-radius:999px; padding:3px 9px;
+}
+.stats-tease{
+  color:var(--accent); border-color:var(--accent) !important;
+  animation: teasePulse 2.2s ease-in-out infinite;
+}
+@keyframes teasePulse{
+  0%,100%{ opacity:.7; }
+  50%{ opacity:1; }
+}
+.stats-unlocked{
+  background: linear-gradient(90deg,#ff2d95,#ff9f1c,#ffe14d,#3ddc84,#00c2ff,#9b5cff) !important;
+  border-color:transparent !important;
+}
+
+/* LÄGESVÄLJARE */
+.mode-row{ margin-top:-6px; }
+.mode-row .chip[disabled]{ opacity:.5; }
+.secret-chip{
+  border-color:#9b5cff !important;
+}
+.secret-chip.active{
+  background: linear-gradient(90deg,#ff2d95,#ff9f1c,#ffe14d,#3ddc84,#00c2ff,#9b5cff) !important;
+  border-color:transparent !important;
+  color:#2A1730 !important;
+}
+
+/* SNURRTIPS */
+.spin-tip{
+  margin:0; min-height:17px;
+  font-size:12.5px; font-weight:700; color:var(--cream-dim);
+  opacity:0; transition:opacity .25s ease;
+  text-align:center;
+}
+.spin-tip.show{ opacity:1; }
+
+/* KNAPPAR */
+@keyframes btnBreathe{
+  0%,100%{ transform:scale(1); }
+  50%{ transform:scale(1.04); }
+}
+.spin-btn:not([disabled]){ animation: btnBreathe 2.6s ease-in-out infinite; }
+.spin-btn:active{ animation:none; }
+.stop-btn{
+  background:#ffe14d;
+  color:#2A1730;
+  box-shadow:0 4px 0 #b89a12;
+  animation: stopPulse .5s ease-in-out infinite !important;
+}
+@keyframes stopPulse{
+  0%,100%{ transform:scale(1); }
+  50%{ transform:scale(1.08); }
+}
+
+/* NAVET POPPAR NÄR HJULET LANDAT */
+@keyframes hubPop{
+  0%{ transform:translate(-50%,-50%) scale(1); }
+  40%{ transform:translate(-50%,-50%) scale(1.28); }
+  100%{ transform:translate(-50%,-50%) scale(1); }
+}
+.hub-pop{ animation: hubPop .45s ease; }
+
+/* SKAKNING VID BONUS/JACKPOT */
+@keyframes appShake{
+  0%,100%{ transform:translateX(0); }
+  20%{ transform:translateX(-6px) rotate(-.4deg); }
+  40%{ transform:translateX(6px) rotate(.4deg); }
+  60%{ transform:translateX(-4px); }
+  80%{ transform:translateX(4px); }
+}
+.app.shake{ animation: appShake .6s ease; }
+
+/* RESULTATBANNER I BONUSVARIANT */
+.result-banner.bonus{
+  background: radial-gradient(circle, rgba(255,201,51,.95) 42%, rgba(180,110,0,.7) 64%, transparent 78%);
+  color:#2A1730;
+  font-size:30px;
+}
+.result-banner.bonus b{ color:#2A1730; }
+
+/* GULDTAGGAR */
+.tag.gold, .tag-mini.gold{
+  background: linear-gradient(135deg,#FFC933,#FFE680);
+  border-color:#FFC933;
+  color:#2A1730;
+}
+.tray-bonus-count{
+  background: linear-gradient(135deg,#FFC933,#FFE680);
+  color:#2A1730; font-weight:800; font-size:11px;
+  border-radius:999px; padding:3px 9px;
+}
+.tray-extras{
+  display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;
+  padding-top:10px; border-top:1px dashed var(--ring);
+}
+
+/* BRICKAN STUDSAR NÄR EN RUTA FYLLS */
+@keyframes slotPop{
+  0%{ transform:scale(.85); }
+  60%{ transform:scale(1.06); }
+  100%{ transform:scale(1); }
+}
+.tray-slot.filled{ border-style:solid; animation: slotPop .35s ease; }
+
+/* TURBOLÄGET */
+.turbo-grid{
+  display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; width:100%;
+}
+.turbo-cell{
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  background:var(--bg-alt); border:1px solid var(--ring);
+  border-radius:14px; padding:8px 4px;
+}
+.turbo-cell.landed{
+  border-color:var(--accent);
+  animation: slotPop .35s ease;
+}
+.turbo-wheel{
+  position:relative;
+  width:100%; aspect-ratio:1; max-width:84px;
+  border-radius:50%;
+  box-shadow: inset 0 0 0 2px var(--ring);
+}
+.turbo-pointer{
+  position:absolute; top:-7px; left:50%; transform:translateX(-50%);
+  width:0;height:0;
+  border-left:6px solid transparent;
+  border-right:6px solid transparent;
+  border-top:10px solid var(--accent);
+  z-index:3;
+}
+.turbo-label{ font-size:9px; font-weight:800; color:var(--cream-dim); text-align:center; line-height:1.15; }
+.turbo-value{ font-size:10px; font-weight:800; text-align:center; line-height:1.2; min-height:24px; }
+
+/* JACKPOTLÄGET */
+.slot-row{
+  display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; width:100%;
+  padding:10px; border-radius:18px;
+  background:var(--bg-alt); border:1px solid var(--ring);
+}
+.slot-row.jackpot{
+  border-color:#FFC933;
+  box-shadow:0 0 0 3px rgba(255,201,51,.28);
+}
+.slot-reel{ display:flex; flex-direction:column; align-items:center; gap:6px; }
+.slot-wheel{
+  position:relative; width:100%; aspect-ratio:1;
+  border-radius:50%;
+  box-shadow: inset 0 0 0 2px var(--ring);
+}
+.slot-reel.hit .slot-wheel{
+  box-shadow: inset 0 0 0 3px #FFC933, 0 0 14px rgba(255,201,51,.6);
+  animation: slotPop .4s ease;
+}
+.slot-value{ font-size:10.5px; font-weight:800; text-align:center; line-height:1.2; min-height:26px; }
+.slot-outcome{
+  font-family:var(--font-display); font-size:17px; text-align:center;
+  min-height:24px; opacity:0; transition:opacity .25s ease;
+}
+.slot-outcome.show{ opacity:1; }
+.slot-row.jackpot + .slot-outcome b{ color:#FFC933; }
+
+/* MINISPEL */
+.mini-overlay{ align-items:center; }
+.mini-modal{
+  border-radius:24px;
+  max-width:420px;
+  margin:0 12px;
+  text-align:center;
+}
+.mini-scoreboard{
+  display:flex; justify-content:center; gap:10px; flex-wrap:wrap;
+  font-size:11.5px; font-weight:800; color:var(--cream-dim); margin-bottom:14px;
+}
+.mini-scoreboard span{
+  background:var(--bg-alt); border:1px solid var(--ring);
+  border-radius:999px; padding:4px 10px;
+}
+.mini-hud{
+  display:flex; justify-content:space-between; align-items:center;
+  font-weight:800; font-size:15px; margin-bottom:8px;
+}
+.mini-timer.urgent{ color:var(--accent); animation: teasePulse .5s ease-in-out infinite; }
+.mini-field{
+  position:relative;
+  width:100%; height:300px;
+  background:var(--bg-alt);
+  border:1px solid var(--ring);
+  border-radius:16px;
+  overflow:hidden;
+  touch-action:manipulation;
+}
+.mini-item{
+  position:absolute;
+  transform:translate(-50%,-50%);
+  background:none; border:none; padding:0;
+  font-size:30px; line-height:1;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,.4));
+}
+.mini-item.bad{ font-size:28px; }
+.mini-result-title{
+  font-family:var(--font-display); font-size:24px; margin:6px 0 4px;
+  color:var(--accent);
+}
+
+/* UPPLÅSNINGSRUTAN */
+.unlock-overlay{ align-items:center; }
+.unlock-card{
+  background:var(--surface);
+  border:2px solid transparent;
+  background-image: linear-gradient(var(--surface),var(--surface)), linear-gradient(90deg,#ff2d95,#ff9f1c,#ffe14d,#3ddc84,#00c2ff,#9b5cff);
+  background-origin:border-box;
+  background-clip: padding-box, border-box;
+  border-radius:24px;
+  padding:24px 20px;
+  margin:0 14px;
+  max-width:400px;
+  text-align:center;
+  animation: unlockIn .5s cubic-bezier(.2,1.3,.4,1);
+}
+@keyframes unlockIn{
+  from{ opacity:0; transform:scale(.8) translateY(20px); }
+  to{ opacity:1; transform:none; }
+}
+.unlock-emoji{ font-size:54px; line-height:1; }
+.unlock-card h2{
+  font-family:var(--font-display); font-size:22px; margin:8px 0 6px;
+  background: linear-gradient(90deg,#ff2d95,#ff9f1c,#ffe14d,#3ddc84,#00c2ff,#9b5cff);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.unlock-card p{ font-size:13.5px; color:var(--cream-dim); font-weight:600; margin:0 0 12px; }
+.unlock-list{
+  list-style:none; margin:0 0 16px; padding:0;
+  display:flex; flex-direction:column; gap:6px;
+  font-size:13px; font-weight:700; text-align:left;
+}
+
+/* GYLLENE LÄGET PÅ */
+:root[data-secret="on"] body{
+  background: radial-gradient(circle at 50% -10%, #3a1d4d, var(--bg) 60%);
+}
+:root[data-secret="on"] .stage,
+:root[data-secret="on"] .tray{
+  box-shadow:0 8px 0 var(--shadow), 0 0 22px rgba(155,92,255,.35);
+}
+:root[data-secret="on"] .brand span{
+  background: linear-gradient(90deg,#ff2d95,#ff9f1c,#ffe14d,#3ddc84,#00c2ff,#9b5cff);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  animation: hueShift 6s linear infinite;
+}
+@keyframes hueShift{
+  to{ filter: hue-rotate(360deg); }
+}
+
+.icon-btn.muted{ opacity:.6; }
+
+@media (max-width: 380px){
+  .turbo-grid{ grid-template-columns:repeat(2, 1fr); }
+}
+
 @media (prefers-reduced-motion: reduce){
   svg.wheel{ transition-duration: .4s !important; }
   .spin-btn:active{ transform:none; }
+  /* Allt som loopar stängs av — enstaka övergångar får vara kvar, de är
+     korta och bär information om vad som just hände. */
+  .spin-btn:not([disabled]),
+  .stop-btn,
+  .slice-winner,
+  .slice-golden,
+  .wheel-outer.lit::after,
+  .stats-tease,
+  .mini-timer.urgent,
+  :root[data-secret="on"] .brand span{
+    animation:none !important;
+  }
+  .app.shake,
+  .hub-pop,
+  .tray-slot.filled,
+  .turbo-cell.landed,
+  .slot-reel.hit .slot-wheel,
+  .unlock-card{
+    animation:none !important;
+  }
+  .pointer-spin{ animation:none; }
 }

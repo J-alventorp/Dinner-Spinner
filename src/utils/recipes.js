@@ -7,21 +7,27 @@ export function formatDate(ts){
   return d.toLocaleDateString('sv-SE', {day:'numeric', month:'short'}) + ' ' + d.toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'});
 }
 
-let lastTemplateId = null;
+// Kom ihåg de tre senast använda mallarna, inte bara den senaste. Med 20
+// mallar i listan kändes ett minne på ett steg fortfarande repetitivt när
+// man tryckte "Kombinera om" några gånger i rad.
+const RECENT_MEMORY = 3;
+let recentTemplateIds = [];
 
 function pickTemplate(){
   if(RECIPE_TEMPLATES.length === 1) return RECIPE_TEMPLATES[0];
-  const candidates = RECIPE_TEMPLATES.filter(t => t.id !== lastTemplateId);
+  const candidates = RECIPE_TEMPLATES.filter(t => recentTemplateIds.indexOf(t.id) === -1);
   const pool = candidates.length ? candidates : RECIPE_TEMPLATES;
   const template = pool[Math.floor(Math.random() * pool.length)];
-  lastTemplateId = template.id;
+  recentTemplateIds = [template.id].concat(recentTemplateIds).slice(0, RECENT_MEMORY);
   return template;
 }
 
 export function craftRecipe(results){
   const protein = results.protein, carb = results.carb,
-        veggies = results.veggie, sauce = results.sauce,
+        veggies = results.veggie || [], sauce = results.sauce,
         topping = results.topping, wild = results.wild;
+  const extras = results.extras || [];
+  const mystery = results.mystery;
   const veggieLower = veggies.map(dc).join(', ');
   const cuisine = CUISINES.find(c => c.label === results.cuisine);
 
@@ -29,14 +35,31 @@ export function craftRecipe(results){
   const ctx = { protein, carb, veggieLower, sauce, topping, wild, cuisine };
   const steps = template.buildSteps(ctx);
 
+  if(mystery){
+    steps.push('Mystisk ingrediens: ' + mystery.replace('🔮 ', '') + '. Tolka den precis som du vill — det är hela poängen.');
+  }
+
+  const bonusStep = buildBonusStep(extras);
+  if(bonusStep) steps.push(bonusStep);
+
   const tip = buildVariationTip(cuisine, sauce, wild);
   if(tip) steps.push(tip);
 
   return {
     title: cap((cuisine ? cuisine.label + '-inspirerad ' : '') + dc(template.titleFragment(protein, carb))),
     meta: template.meta,
-    steps
+    steps,
+    extras
   };
+}
+
+function buildBonusStep(extras){
+  if(!extras.length) return null;
+  const list = extras.map(dc);
+  const joined = list.length > 1
+    ? list.slice(0, -1).join(', ') + ' och ' + list[list.length - 1]
+    : list[0];
+  return '🎁 Bonus: du vann ' + joined + '. Lägg till det på slutet och skryt lite om det.';
 }
 
 function buildVariationTip(cuisine, sauce, wild){

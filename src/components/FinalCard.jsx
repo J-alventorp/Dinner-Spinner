@@ -21,20 +21,18 @@ function RecipeCard({ recipe, onSave }){
   );
 }
 
-export default function FinalCard({ itemsList, onSaveFavorite, onRestart }){
+export default function FinalCard({ itemsList, stations, onSaveFavorite, onRestart }){
   const [variant, setVariant] = useState(0);
+  const extras = itemsList.extras || [];
 
-  const recipe = useMemo(() => craftRecipe({
-    cuisine: itemsList.cuisine,
-    protein: itemsList.protein,
-    carb: itemsList.carb,
-    veggie: itemsList.veggie,
-    sauce: itemsList.sauce,
-    topping: itemsList.topping,
-    wild: itemsList.wild
-  }), [itemsList, variant]);
+  const recipe = useMemo(() => craftRecipe(itemsList), [itemsList, variant]);
 
-  const tags = [itemsList.cuisine, itemsList.protein, itemsList.carb, ...itemsList.veggie, itemsList.sauce, itemsList.topping, itemsList.wild];
+  // Bygg taggarna ur stationslistan så att den extra mysteriestationen i
+  // gyllene läget kommer med utan särfall här.
+  const tags = stations.reduce((acc, st) => {
+    if(st.key === 'veggie') return acc.concat(itemsList.veggie || []);
+    return itemsList[st.key] ? acc.concat([itemsList[st.key]]) : acc;
+  }, []);
 
   return (
     <div className="final-card">
@@ -43,6 +41,7 @@ export default function FinalCard({ itemsList, onSaveFavorite, onRestart }){
 
       <div className="plate-summary">
         {tags.map((item, i) => <span className="tag" key={item + i}>{item}</span>)}
+        {extras.map((item, i) => <span className="tag gold" key={'x' + item + i}>🎁 {item}</span>)}
       </div>
 
       <RecipeCard recipe={recipe} onSave={onSaveFavorite} />

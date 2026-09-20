@@ -1,10 +1,8 @@
-import { STATIONS } from '../data/themes.js';
-
-export default function Stepper({ results, stationIdx, spinning, onJump }){
+export default function Stepper({ stations, results, stationIdx, spinning, onJump }){
   return (
     <div className="stepper">
-      {STATIONS.map((st, i) => {
-        const done = st.key === 'veggie' ? results.veggie.length >= st.picks : !!results[st.key];
+      {stations.map((st, i) => {
+        const done = st.picks > 1 ? results.veggie.length >= st.picks : !!results[st.key];
         const cls = 'step' + (i === stationIdx ? ' current' : '') + (done ? ' done' : '');
         return (
           <div

@@ -226,5 +226,183 @@ export const RECIPE_TEMPLATES = [
         cu.seasoningLine
       ];
     }
+  },
+  {
+    id:'curry',
+    titleFragment:(protein, carb) => 'Curry på ' + dc(protein) + ' med ' + dc(carb),
+    meta:'~30 min · 2 portioner · gryta',
+    buildSteps(ctx){
+      const cu = withCuisine(ctx);
+      const pp = proteinProfile(ctx.protein);
+      const cp = carbProfile(ctx.carb);
+      return [
+        ...prepStep(pp),
+        'Fräs lök och vitlök mjuka i en rymlig panna, tillsätt '+cu.flavorTags.join(', ')+' och rör om tills det doftar.',
+        pp.verb+' '+dc(ctx.protein)+' '+pp.time+' tills '+pp.state+'.'+withNote(pp),
+        'Tillsätt '+ctx.veggieLower+' och låt fräsa med någon minut.',
+        'Häll i '+dc(ctx.sauce)+' tillsammans med en skvätt grädde eller kokosmjölk och låt sjuda 10-12 minuter tills såsen tjocknat.',
+        cp.verb+' '+dc(ctx.carb)+' '+cp.method+' och servera currygrytan över.',
+        'Toppa med '+dc(ctx.topping)+' och '+dc(ctx.wild)+'.',
+        cu.seasoningLine
+      ];
+    }
+  },
+  {
+    id:'taco',
+    titleFragment:(protein, carb) => 'Tacobord med ' + dc(protein) + ' och ' + dc(carb),
+    meta:'~25 min · 2 portioner · allt på bordet',
+    buildSteps(ctx){
+      const cu = withCuisine(ctx);
+      const pp = proteinProfile(ctx.protein);
+      const cp = carbProfile(ctx.carb);
+      return [
+        ...prepStep(pp),
+        pp.verb+' '+dc(ctx.protein)+' '+pp.time+' tills '+pp.state+' och krydda rejält med '+cu.flavorTags.join(', ')+'.'+withNote(pp),
+        cp.verb+' '+dc(ctx.carb)+' '+cp.method+' — det blir basen alla bygger på.',
+        'Hacka '+ctx.veggieLower+' i småbitar och lägg upp i separata skålar.',
+        'Rör ihop '+dc(ctx.sauce)+' i en egen skål och ställ fram den mitt på bordet.',
+        'Ställ fram '+dc(ctx.topping)+' och '+dc(ctx.wild)+' bredvid och låt alla bygga sin egen.',
+        cu.seasoningLine
+      ];
+    }
+  },
+  {
+    id:'risotto',
+    titleFragment:(protein, carb) => 'Krämig ' + dc(carb) + '-risotto med ' + dc(protein),
+    meta:'~35 min · 2 portioner · en kastrull, mycket omrörning',
+    buildSteps(ctx){
+      const cu = withCuisine(ctx);
+      const pp = proteinProfile(ctx.protein);
+      return [
+        ...prepStep(pp),
+        'Fräs finhackad lök blank i smör, tillsätt '+dc(ctx.carb)+' och rör tills allt är glansigt.',
+        'Tillsätt varm buljong en slev i taget och rör hela tiden, ca 18 minuter, tills det är krämigt men har lite tuggmotstånd.',
+        'Under tiden: '+dc(pp.verb)+' '+dc(ctx.protein)+' '+pp.time+' i en egen panna tills '+pp.state+'.'+withNote(pp),
+        'Fräs '+ctx.veggieLower+' hastigt och vänd ner i risotton på slutet.',
+        'Rör ner '+dc(ctx.sauce)+' och en klick smör, ta av värmen och låt vila två minuter under lock.',
+        'Lägg upp med '+dc(ctx.protein)+' ovanpå, strö över '+dc(ctx.topping)+' och avsluta med '+dc(ctx.wild)+'.',
+        cu.seasoningLine
+      ];
+    }
+  },
+  {
+    id:'ramen',
+    titleFragment:(protein, carb) => 'Nudelskål med ' + dc(protein) + ' och ' + dc(carb),
+    meta:'~25 min · 2 portioner · djup skål',
+    buildSteps(ctx){
+      const cu = withCuisine(ctx);
+      const pp = proteinProfile(ctx.protein);
+      const cp = carbProfile(ctx.carb);
+      return [
+        ...prepStep(pp),
+        'Koka upp buljong med '+cu.flavorTags.join(', ')+' och låt den dra på svag värme 10 minuter.',
+        'Rör ner '+dc(ctx.sauce)+' i buljongen och smaka av — den ska vara en aning för salt, basen tar upp mycket.',
+        cp.verb+' '+dc(ctx.carb)+' '+cp.method+' och fördela i två djupa skålar.',
+        pp.verb+' '+dc(ctx.protein)+' '+pp.time+' tills '+pp.state+' och skiva upp.'+withNote(pp),
+        'Blanchera '+ctx.veggieLower+' hastigt i buljongen så de behåller färgen.',
+        'Häll den heta buljongen över basen och lägg upp protein och grönsaker i prydliga högar.',
+        'Toppa med '+dc(ctx.topping)+' och '+dc(ctx.wild)+' precis innan servering.',
+        cu.seasoningLine
+      ];
+    }
+  },
+  {
+    id:'burgare',
+    titleFragment:(protein, carb) => 'Burgare på ' + dc(protein) + ' med ' + dc(carb) + ' vid sidan',
+    meta:'~30 min · 2 portioner · panna/grill',
+    buildSteps(ctx){
+      const cu = withCuisine(ctx);
+      const pp = proteinProfile(ctx.protein);
+      const cp = carbProfile(ctx.carb);
+      return [
+        ...prepStep(pp),
+        'Forma eller skiva '+dc(ctx.protein)+' till burgarstorlek och krydda med salt, peppar och '+cu.flavorTags.join(', ')+'.',
+        pp.verb+' '+dc(ctx.protein)+' '+pp.time+' i het panna tills '+pp.state+'.'+withNote(pp),
+        cp.verb+' '+dc(ctx.carb)+' '+cp.method+' som tillbehör.',
+        'Strimla '+ctx.veggieLower+' tunt så det går att stapla i burgaren.',
+        'Bred '+dc(ctx.sauce)+' på både över- och underdelen av brödet.',
+        'Bygg: bröd, grönt, '+dc(ctx.protein)+', '+dc(ctx.topping)+' och en klick '+dc(ctx.wild)+' överst.',
+        cu.seasoningLine
+      ];
+    }
+  },
+  {
+    id:'omelett',
+    titleFragment:(protein, carb) => 'Fluffig omelett med ' + dc(protein) + ' och ' + dc(carb),
+    meta:'~15 min · 2 portioner · en panna',
+    buildSteps(ctx){
+      const cu = withCuisine(ctx);
+      const pp = proteinProfile(ctx.protein);
+      return [
+        ...prepStep(pp),
+        'Vispa 5-6 ägg med en skvätt mjölk, salt och peppar tills smeten är helt jämn.',
+        pp.verb+' '+dc(ctx.protein)+' '+pp.time+' tills '+pp.state+' och lägg åt sidan.'+withNote(pp),
+        'Fräs '+ctx.veggieLower+' mjuka i samma panna, 3-4 minuter.',
+        'Häll äggsmeten över grönsakerna på medelvärme och dra in kanterna mot mitten tills omeletten precis stelnat på ytan.',
+        'Lägg '+dc(ctx.protein)+' och '+dc(ctx.sauce)+' på ena halvan och vik ihop.',
+        'Toppa med '+dc(ctx.topping)+' och '+dc(ctx.wild)+', servera direkt med '+dc(ctx.carb)+' vid sidan.',
+        cu.seasoningLine
+      ];
+    }
+  },
+  {
+    id:'pita',
+    titleFragment:(protein, carb) => 'Fylld pita med ' + dc(protein) + ' och ' + dc(carb),
+    meta:'~20 min · 2 portioner · bröd & fyllning',
+    buildSteps(ctx){
+      const cu = withCuisine(ctx);
+      const pp = proteinProfile(ctx.protein);
+      const cp = carbProfile(ctx.carb);
+      return [
+        ...prepStep(pp),
+        pp.verb+' '+dc(ctx.protein)+' '+pp.time+' tills '+pp.state+', krydda med '+cu.flavorTags.join(', ')+'.'+withNote(pp),
+        cp.verb+' '+dc(ctx.carb)+' '+cp.method+' och blanda med lite olivolja och citron.',
+        'Hacka '+ctx.veggieLower+' grovt till en fräsch salladsblandning.',
+        'Värm pitabröden hastigt och öppna dem försiktigt till fickor.',
+        'Fyll med kolhydraten, salladen och '+dc(ctx.protein)+', ringla in '+dc(ctx.sauce)+' i varje ficka.',
+        'Avsluta med '+dc(ctx.topping)+' och '+dc(ctx.wild)+' överst.',
+        cu.seasoningLine
+      ];
+    }
+  },
+  {
+    id:'poke',
+    titleFragment:(protein, carb) => 'Poké-skål med ' + dc(protein) + ' på ' + dc(carb),
+    meta:'~20 min · 2 portioner · kall skål',
+    buildSteps(ctx){
+      const cu = withCuisine(ctx);
+      const pp = proteinProfile(ctx.protein);
+      const cp = carbProfile(ctx.carb);
+      return [
+        ...prepStep(pp),
+        cp.verb+' '+dc(ctx.carb)+' '+cp.method+' och låt svalna till ljummet — basen ska inte vara het.',
+        pp.verb+' '+dc(ctx.protein)+' '+pp.time+' tills '+pp.state+', skär i jämna tärningar.'+withNote(pp),
+        'Marinera tärningarna i '+dc(ctx.sauce)+' i 10 minuter medan du förbereder resten.',
+        'Skiva '+ctx.veggieLower+' tunt och lägg upp i egna sektioner ovanpå basen.',
+        'Lägg det marinerade proteinet i mitten och ringla över resten av marinaden.',
+        'Strö '+dc(ctx.topping)+' över hela skålen och toppa med '+dc(ctx.wild)+'.',
+        cu.seasoningLine
+      ];
+    }
+  },
+  {
+    id:'chili',
+    titleFragment:(protein, carb) => 'Mustig chili på ' + dc(protein) + ' med ' + dc(carb),
+    meta:'~45 min · 2 portioner · gryta som får puttra',
+    buildSteps(ctx){
+      const cu = withCuisine(ctx);
+      const pp = proteinProfile(ctx.protein);
+      const cp = carbProfile(ctx.carb);
+      return [
+        ...prepStep(pp),
+        pp.verb+' '+dc(ctx.protein)+' i en tjockbottnad gryta tills '+pp.state+'.'+withNote(pp),
+        'Tillsätt '+ctx.veggieLower+' och fräs med tills de mjuknat, 4-5 minuter.',
+        'Krydda rejält med '+cu.flavorTags.join(', ')+' och rör om tills det doftar kraftigt.',
+        'Häll i '+dc(ctx.sauce)+' plus krossade tomater och bönor, låt puttra på svag värme minst 25 minuter.',
+        cp.verb+' '+dc(ctx.carb)+' '+cp.method+' och servera chilin över.',
+        'Toppa varje portion med '+dc(ctx.topping)+' och '+dc(ctx.wild)+'.',
+        cu.seasoningLine
+      ];
+    }
   }
 ];
