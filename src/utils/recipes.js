@@ -27,10 +27,25 @@ export function craftRecipe(results){
 
   const template = pickTemplate();
   const ctx = { protein, carb, veggieLower, sauce, topping, wild, cuisine };
+  const steps = template.buildSteps(ctx);
+
+  const tip = buildVariationTip(cuisine, sauce, wild);
+  if(tip) steps.push(tip);
 
   return {
     title: cap((cuisine ? cuisine.label + '-inspirerad ' : '') + dc(template.titleFragment(protein, carb))),
     meta: template.meta,
-    steps: template.buildSteps(ctx)
+    steps
   };
+}
+
+function buildVariationTip(cuisine, sauce, wild){
+  if(!cuisine) return null;
+  const altSauce = cuisine.sauceNudge && cuisine.sauceNudge.find(s => s.toLowerCase() !== (sauce || '').toLowerCase());
+  const altWild = cuisine.wildNudge && cuisine.wildNudge.find(w => w.toLowerCase() !== (wild || '').toLowerCase());
+  const ideas = [];
+  if(altSauce) ideas.push('byta såsen mot ' + dc(altSauce));
+  if(altWild) ideas.push('testa ' + dc(altWild) + ' som extra tillägg');
+  if(!ideas.length) return null;
+  return 'Tips för nästa gång: ' + ideas.join(' eller ') + ' för en annan känsla på samma ' + dc(cuisine.label) + '-tema.';
 }
