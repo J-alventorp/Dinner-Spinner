@@ -1,5 +1,7 @@
 import { useMemo } from 'react';
-import { WHEEL_STYLES } from '../data/wheelStyles.js';
+import { wheelStyle, BONUS_SLICE_FILL, BONUS_SLICE_STROKE } from '../data/wheelStyles.js';
+import { BONUS_TOKEN } from '../data/bonus.js';
+import { CLASSIC_SPIN_MS } from '../data/spinTiming.js';
 
 function polar(cx, cy, r, angleDeg){
   const rad = (angleDeg - 90) * Math.PI / 180;
@@ -63,22 +65,38 @@ function PatternDefs({ patternId }){
   }
 }
 
-export default function Wheel({ items, rotation, stationKey }){
+// `uid` håller SVG-id:n unika. Turbo-läget renderar sju hjul samtidigt i
+// samma dokument, och delade pattern-/filter-id:n hade fått dem att plocka
+// varandras mönster.
+export default function Wheel({
+  items, rotation, stationKey, durationMs, free,
+  winnerIndex, goldenIndex, compact, secretOn, uid
+}){
   const n = items.length;
   const cx = 150, cy = 150, r = 145;
-  const fontSize = n > 10 ? 9 : (n > 7 ? 10.5 : 12.5);
-  const style = WHEEL_STYLES[stationKey] || { palette:['var(--wheel-1)','var(--wheel-2)','var(--wheel-3)','var(--wheel-4)','var(--wheel-5)','var(--wheel-6)'], patternId:'pat-globe' };
+  const style = wheelStyle(stationKey, secretOn);
+  const suffix = uid || stationKey || 'w';
+  const patRef = style.patternId + '-' + suffix;
+  const glowRef = 'glow-' + suffix;
+
+  const baseFont = n > 10 ? 9 : (n > 7 ? 10.5 : 12.5);
+  const fontSize = compact ? baseFont * 0.85 : baseFont;
 
   const segments = useMemo(() => {
     const seg = 360 / n;
     return items.map((item, i) => {
       const a0 = i * seg, a1 = (i + 1) * seg, mid = a0 + seg / 2;
       const pt = polar(cx, cy, r * 0.62, mid);
+      const isBonus = item === BONUS_TOKEN;
       return {
         key: item + '-' + i,
+        index: i,
         path: arcPath(cx, cy, r, a0, a1),
-        color: style.palette[i % style.palette.length],
-        text: item,
+        color: isBonus ? BONUS_SLICE_FILL : style.palette[i % style.palette.length],
+        isBonus,
+        // Bonusrutan visas som bara gåvan — hela texten "🎁 BONUS" får inte
+        // plats läsbart i en smal tårtbit.
+        text: isBonus ? '🎁' : item,
         x: pt.x,
         y: pt.y,
         rotate: mid - 90
@@ -86,24 +104,62 @@ export default function Wheel({ items, rotation, stationKey }){
     });
   }, [items, n, style]);
 
+  const winner = winnerIndex != null ? segments[winnerIndex] : null;
+  const golden = goldenIndex != null ? segments[goldenIndex] : null;
+
   return (
-    <svg className="wheel" viewBox="0 0 300 300" style={{ transform: `rotate(${rotation}deg)` }}>
+    <svg
+      className={'wheel' + (free ? ' wheel-free' : '')}
+      viewBox="0 0 300 300"
+      style={{ transform: `rotate(${rotation}deg)`, '--spin-ms': (durationMs || CLASSIC_SPIN_MS) + 'ms' }}
+    >
       <defs>
-        <PatternDefs patternId={style.patternId} />
+        <PatternDefs patternId={patRef} />
+        <filter id={glowRef} x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="4" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
       </defs>
+
       {segments.map(s => (
         <g key={s.key}>
           <path d={s.path} fill={s.color} stroke="#2A1730" strokeWidth="2" />
           <text
             x={s.x} y={s.y}
             textAnchor="middle" dominantBaseline="middle"
-            fontSize={fontSize} fontFamily="'Nunito Sans', sans-serif" fontWeight="800"
+            fontSize={s.isBonus ? fontSize * 1.6 : fontSize}
+            fontFamily="'Nunito Sans', sans-serif" fontWeight="800"
             fill="#2A1730"
             transform={`rotate(${s.rotate} ${s.x} ${s.y})`}
           >{s.text}</text>
         </g>
       ))}
-      <circle cx={cx} cy={cy} r={r} fill={`url(#${style.patternId})`} opacity="0.15" />
+
+      <circle cx={cx} cy={cy} r={r} fill={`url(#${patRef})`} opacity="0.15" />
+
+      {/* Målrutan i skicklighetsläget — markerad INNAN spelaren stoppar,
+          så det finns något att sikta på. */}
+      {golden && (
+        <path
+          className="slice-golden"
+          d={golden.path}
+          fill="none"
+          stroke={BONUS_SLICE_STROKE}
+          strokeWidth="6"
+          filter={`url(#${glowRef})`}
+        />
+      )}
+
+      {/* Vinnarrutan ritas om ovanpå så den lyser upp när hjulet stannat. */}
+      {winner && (
+        <g className="slice-winner">
+          <path d={winner.path} fill="#FFF3B0" opacity="0.25" />
+          <path d={winner.path} fill="none" stroke="#FFF3B0" strokeWidth="4" filter={`url(#${glowRef})`} />
+        </g>
+      )}
     </svg>
   );
 }

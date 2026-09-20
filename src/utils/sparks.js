@@ -1,6 +1,12 @@
 const SPARK_COLORS = ['#FFD447', '#FFB020', '#FFF3B0', '#FF8C42'];
 
-function makeSpark(width){
+export const SPARK_PALETTES = {
+  normal: SPARK_COLORS,
+  gold: ['#FFF3B0', '#FFC933', '#FFE680'],
+  rainbow: ['#ff2d95', '#ffe14d', '#3ddc84', '#00c2ff', '#9b5cff']
+};
+
+function makeSpark(width, colors){
   const angle = Math.PI + Math.random() * Math.PI; // spray downward/outward from the tip
   const speed = 0.6 + Math.random() * 1.2;
   return {
@@ -9,7 +15,7 @@ function makeSpark(width){
     vx: Math.cos(angle) * speed,
     vy: Math.abs(Math.sin(angle)) * speed + 0.4,
     size: 1.5 + Math.random() * 2,
-    color: SPARK_COLORS[Math.floor(Math.random() * SPARK_COLORS.length)],
+    color: colors[Math.floor(Math.random() * colors.length)],
     life: 0,
     maxLife: 260 + Math.random() * 200
   };
@@ -19,7 +25,12 @@ function makeSpark(width){
 // (meant to sit right at the wheel pointer's tip) until the returned cleanup
 // function is called. Unlike confetti.js's runConfetti, this has no fixed
 // duration — the caller (SparkCanvas) controls its lifetime by mount/unmount.
-export function runSparks(canvas){
+export function runSparks(canvas, options){
+  const opts = options || {};
+  const colors = SPARK_PALETTES[opts.palette] || SPARK_PALETTES.normal;
+  // Högre intensitet = kortare tid mellan gnistorna.
+  const spawnEvery = Math.max(12, 45 / (opts.intensity || 1));
+
   const ctx = canvas.getContext('2d');
   const dpr = window.devicePixelRatio || 1;
   const width = canvas.clientWidth || 60;
@@ -40,8 +51,8 @@ export function runSparks(canvas){
     const dt = now - last;
     last = now;
 
-    if(now - lastSpawn > 45){
-      particles.push(makeSpark(width));
+    if(now - lastSpawn > spawnEvery){
+      particles.push(makeSpark(width, colors));
       lastSpawn = now;
     }
 

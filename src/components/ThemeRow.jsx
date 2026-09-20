@@ -9,7 +9,7 @@ export default function ThemeRow({ theme, spinning, onSelect }){
           className={'chip' + (theme === key ? ' active' : '')}
           onClick={() => { if(!spinning) onSelect(key); }}
         >
-          {THEMES[key].label}
+          {THEMES[key].icon} {THEMES[key].label}
         </button>
       ))}
     </div>
