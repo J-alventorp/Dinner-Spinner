@@ -133,14 +133,16 @@ header{ text-align:center; padding-top:4px; }
 }
 .step{
   display:flex; flex-direction:column; align-items:center; gap:2px;
-  font-size:10px; color:var(--cream-dim); font-weight:700;
+  font-size:9px; color:var(--cream-dim); font-weight:700;
   flex:1;
   position:relative;
+  cursor:pointer;
 }
+.step[aria-disabled="true"]{ cursor:default; opacity:.65; }
 .step .dot{
-  width:30px;height:30px;border-radius:50%;
+  width:26px;height:26px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  font-size:15px;
+  font-size:13px;
   background:var(--bg-alt);
   border:2px solid var(--ring);
   transition:transform .25s ease, border-color .25s ease, background .25s ease;
@@ -154,7 +156,7 @@ header{ text-align:center; padding-top:4px; }
   background:var(--accent);
   border-color:var(--accent);
 }
-.step .lbl{ max-width:56px; text-align:center; }
+.step .lbl{ max-width:46px; text-align:center; }
 
 /* STAGE */
 .stage{
@@ -190,6 +192,20 @@ header{ text-align:center; padding-top:4px; }
   border-top:22px solid var(--accent);
   filter: drop-shadow(0 2px 0 var(--shadow));
   z-index:3;
+  transform-origin:50% 0%;
+}
+@keyframes pointerWobble{
+  0%,100%{ transform:translateX(-50%) rotate(0deg); }
+  25%{ transform:translateX(-50%) rotate(-10deg); }
+  75%{ transform:translateX(-50%) rotate(10deg); }
+}
+.pointer-spin{ animation: pointerWobble .16s ease-in-out infinite; }
+.spark-canvas{
+  position:absolute;
+  top:-24px; left:50%; transform:translateX(-50%);
+  width:60px; height:60px;
+  pointer-events:none;
+  z-index:4;
 }
 .wheel-outer{
   width:100%;height:100%;
@@ -238,14 +254,31 @@ svg.wheel{
   border-radius:999px;
 }
 .stage-actions{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
-.result-flash{
-  font-family:var(--font-display);
-  font-size:15px;
-  min-height:20px;
-  color:var(--cream);
-  text-align:center;
+
+@keyframes stageIn{
+  from{ opacity:0; transform:translateY(8px); }
+  to{ opacity:1; transform:none; }
 }
-.result-flash b{ color:var(--accent); }
+.stage-enter{ animation: stageIn .35s ease; }
+
+.result-banner{
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  text-align:center;
+  border-radius:50%;
+  background:rgba(10,4,12,0.72);
+  font-family:var(--font-display);
+  font-size:26px;
+  color:var(--cream);
+  opacity:0;
+  transform:scale(.85);
+  transition:opacity .25s ease, transform .25s ease;
+  pointer-events:none;
+  z-index:5;
+  padding:12px;
+}
+.result-banner.show{ opacity:1; transform:scale(1); }
+.result-banner b{ color:var(--accent); font-size:1.25em; }
 
 /* TRAY */
 .tray{
@@ -261,7 +294,7 @@ svg.wheel{
   font-family:var(--font-display); font-size:15px; margin:0;
 }
 .tray-grid{
-  display:grid; grid-template-columns:repeat(5,1fr); gap:8px;
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(64px, 1fr)); gap:8px;
 }
 .tray-slot{
   background:var(--bg-alt);
@@ -285,7 +318,7 @@ svg.wheel{
   font-size:11px; display:flex;align-items:center;justify-content:center;
 }
 
-/* PANTRY / MODAL */
+/* MODAL */
 .modal-overlay{
   position:fixed; inset:0; background:rgba(10,4,12,0.6);
   display:flex; align-items:flex-end; justify-content:center;
@@ -304,12 +337,6 @@ svg.wheel{
 .modal-close{
   float:right; background:none;border:none;color:var(--cream);font-size:20px;
 }
-.pantry-grid{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:6px; }
-.pantry-chip{
-  background:var(--bg-alt); border:1.5px solid var(--ring); color:var(--cream);
-  padding:8px 13px; border-radius:999px; font-size:13px; font-weight:700;
-}
-.pantry-chip.on{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
 .cat-tabs{ display:flex; gap:6px; overflow-x:auto; margin:10px 0 12px; }
 .cat-tab{
   background:var(--bg-alt); border:1.5px solid var(--ring); color:var(--cream);

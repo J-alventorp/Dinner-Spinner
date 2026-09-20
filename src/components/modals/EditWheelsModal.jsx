@@ -22,7 +22,7 @@ export default function EditWheelsModal({ theme, custom, onAddItem, onRemoveItem
         <p className="hint">Lägg till, ta bort eller nollställ innehållet i varje hjul.</p>
 
         <div className="cat-tabs">
-          {STATIONS.map(st => (
+          {STATIONS.filter(st => st.key !== 'cuisine').map(st => (
             <button
               key={st.key}
               className={'cat-tab' + (editTab === st.key ? ' active' : '')}

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { STATIONS, THEMES } from './data/themes.js';
+import { CUISINES } from './data/cuisines.js';
 import { useLocalStorageState } from './utils/storage.js';
 import { useWheelSpin } from './hooks/useWheelSpin.js';
 import Header from './components/Header.jsx';
@@ -9,12 +10,12 @@ import Stage from './components/Stage.jsx';
 import Tray from './components/Tray.jsx';
 import FinalCard from './components/FinalCard.jsx';
 import ConfettiCanvas from './components/ConfettiCanvas.jsx';
-import PantryModal from './components/modals/PantryModal.jsx';
 import EditWheelsModal from './components/modals/EditWheelsModal.jsx';
 import FavoritesModal from './components/modals/FavoritesModal.jsx';
 import HistoryModal from './components/modals/HistoryModal.jsx';
 
-const EMPTY_RESULTS = { protein: null, carb: null, veggie: [], sauce: null, wild: null };
+const EMPTY_RESULTS = { cuisine: null, protein: null, carb: null, veggie: [], sauce: null, topping: null, wild: null };
+const RESULT_HOLD_MS = 1000;
 
 function makeId(){
   return Date.now() + '-' + Math.random().toString(36).slice(2, 7);
@@ -23,7 +24,6 @@ function makeId(){
 export default function App(){
   const [theme, setTheme] = useLocalStorageState('sfd_theme', 'classic');
   const [custom, setCustom] = useLocalStorageState('sfd_custom', {});
-  const [pantry, setPantry] = useLocalStorageState('sfd_pantry', []);
   const [favorites, setFavorites] = useLocalStorageState('sfd_favorites', []);
   const [history, setHistory] = useLocalStorageState('sfd_history', []);
 
@@ -34,20 +34,22 @@ export default function App(){
   const [historyLogged, setHistoryLogged] = useState(false);
   const [activeModal, setActiveModal] = useState(null);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [recipeRefresh, setRecipeRefresh] = useState(0);
 
   const { rotation, spinning, spin, reset: resetWheel } = useWheelSpin();
   // Bumped on reset/reroll so an advance-to-next-station timer scheduled
   // before the reset can't fire afterwards against the now-cleared state.
   const resetTokenRef = useRef(0);
 
-  const getPool = (key) => (custom[key] && custom[key].length) ? custom[key] : THEMES[theme][key];
+  const getPool = (key) => {
+    if(key === 'cuisine') return CUISINES.map(c => c.label);
+    return (custom[key] && custom[key].length) ? custom[key] : THEMES[theme][key];
+  };
 
   const allDone = STATIONS.every(st => (
     st.key === 'veggie' ? results.veggie.length >= st.picks : !!results[st.key]
   ));
 
-  const currentItemsList = () => [results.protein, results.carb, ...results.veggie, results.sauce, results.wild];
+  const currentItemsList = () => [results.cuisine, results.protein, results.carb, ...results.veggie, results.sauce, results.topping, results.wild];
 
   useEffect(() => {
     if(allDone && !historyLogged){
@@ -79,15 +81,17 @@ export default function App(){
         setTimeout(() => {
           if(resetTokenRef.current !== token) return;
           setSubPick(0);
+          setResultFlash(null);
           advanceStation();
-        }, 850);
+        }, RESULT_HOLD_MS);
       }
     } else {
       setResults(prev => ({ ...prev, [key]: value }));
       setTimeout(() => {
         if(resetTokenRef.current !== token) return;
+        setResultFlash(null);
         advanceStation();
-      }, 900);
+      }, RESULT_HOLD_MS);
     }
   }
 
@@ -130,10 +134,6 @@ export default function App(){
   function handleSetTheme(key){
     if(spinning) return;
     setTheme(key);
-  }
-
-  function togglePantry(item){
-    setPantry(prev => prev.indexOf(item) === -1 ? [...prev, item] : prev.filter(x => x !== item));
   }
 
   function addCustomItem(tab, value){
@@ -179,7 +179,6 @@ export default function App(){
     <>
       <div className="app">
         <Header
-          onOpenPantry={() => setActiveModal('pantry')}
           onOpenEdit={() => setActiveModal('edit')}
           onOpenFavorites={() => setActiveModal('favorites')}
           onOpenHistory={() => setActiveModal('history')}
@@ -188,20 +187,18 @@ export default function App(){
 
         <ThemeRow theme={theme} spinning={spinning} onSelect={handleSetTheme} />
 
-        <Stepper results={results} stationIdx={stationIdx} />
+        <Stepper results={results} stationIdx={stationIdx} spinning={spinning} onJump={rerollStation} />
 
         <div id="gameArea">
           {allDone ? (
             <FinalCard
               itemsList={results}
-              pantry={pantry}
-              refreshKey={recipeRefresh}
               onSaveFavorite={saveFavorite}
-              onAgain={() => setRecipeRefresh(r => r + 1)}
               onRestart={fullReset}
             />
           ) : (
             <Stage
+              key={currentStation.key}
               station={currentStation}
               pool={currentPool}
               subPick={subPick}
@@ -218,9 +215,6 @@ export default function App(){
         <footer>Prototyp · dina val sparas bara i den här webbläsaren</footer>
       </div>
 
-      {activeModal === 'pantry' && (
-        <PantryModal pantry={pantry} onTogglePantry={togglePantry} onClose={() => setActiveModal(null)} />
-      )}
       {activeModal === 'edit' && (
         <EditWheelsModal
           theme={theme}
