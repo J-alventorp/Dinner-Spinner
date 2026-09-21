@@ -3,7 +3,7 @@ export default function Header({
 }){
   return (
     <header>
-      <h1 className="brand">SPIN FOR <span>DINNER</span></h1>
+      <h1 className="brand">DINNER <span>SPINNER</span></h1>
       <p className="tagline">Snurra fram kvällens middag</p>
       <div className="top-actions">
         <button className="icon-btn" title="Anpassa hjul" aria-label="Anpassa hjul" onClick={onOpenEdit}>⚙️</button>

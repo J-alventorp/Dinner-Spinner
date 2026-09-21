@@ -11,3 +11,10 @@ export const SETTLE_PAD_MS = 100;
 
 // Hur länge "Du fick X!"-bannern ligger kvar innan nästa station.
 export const RESULT_HOLD_MS = 1000;
+
+// Turboläget snurrar alla hjul samtidigt — varje hjul får en egen
+// slumpad varaktighet inom det här spannet plus en liten stagger vid
+// starten, så det inte känns som att alla stannar exakt samtidigt.
+export const TURBO_MIN_MS = 1800;
+export const TURBO_MAX_MS = 3200;
+export const TURBO_STAGGER_MS = 90;

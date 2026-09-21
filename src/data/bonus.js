@@ -12,6 +12,14 @@ export const BONUS_TOKEN = '🎁 BONUS';
 // utseende mellan renderingar.
 export const BONUS_CHANCE = 0.28;
 
+// Givet att bonusrutan redan träffats: chans att den blir en jackpot
+// istället för en vanlig bonus — fler extras, större fest.
+export const JACKPOT_CHANCE = 0.16;
+
+// Givet att bonusrutan träffats (och det inte blev jackpot): chans att den
+// ger en gratis extraspin på NÄSTA station istället för en extra-topping.
+export const EXTRASPIN_CHANCE = 0.3;
+
 // Stationer som aldrig får bonusruta. Kök-hjulet är för litet och styr
 // hela receptets ton, så en bonusruta där känns mest som en miss.
 export const BONUS_EXCLUDED_STATIONS = ['cuisine'];
@@ -56,4 +64,13 @@ export function injectBonus(pool){
 export function shouldRollBonus(stationKey){
   if(BONUS_EXCLUDED_STATIONS.indexOf(stationKey) !== -1) return false;
   return Math.random() < BONUS_CHANCE;
+}
+
+// Avgör vad en träffad bonusruta faktiskt blir: 'jackpot' (flera extras och
+// stor fest), 'extraspin' (gratis snurr på nästa station) eller 'extra' (den
+// vanliga, en extra-topping).
+export function rollBonusKind(){
+  if(Math.random() < JACKPOT_CHANCE) return 'jackpot';
+  if(Math.random() < EXTRASPIN_CHANCE) return 'extraspin';
+  return 'extra';
 }

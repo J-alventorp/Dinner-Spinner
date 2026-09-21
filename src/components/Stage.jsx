@@ -5,7 +5,7 @@ import { randomTip } from '../data/spinTips.js';
 
 export default function Stage({
   station, pool, subPick, rotation, durationMs, spinning,
-  resultFlash, winnerIndex, onSpin
+  resultFlash, winnerIndex, onSpin, onTurbo
 }){
   const [tip, setTip] = useState('');
 
@@ -19,7 +19,10 @@ export default function Stage({
   }, [spinning]);
 
   const flashValue = resultFlash ? resultFlash.value : null;
-  const isBonusFlash = !!(resultFlash && resultFlash.kind === 'bonus');
+  const flashKind = resultFlash ? resultFlash.kind : null;
+  const isBonusFlash = flashKind === 'bonus';
+  const isJackpotFlash = flashKind === 'jackpot';
+  const isExtraspinFlash = flashKind === 'extraspin';
 
   return (
     <div className="stage stage-enter">
@@ -45,10 +48,18 @@ export default function Stage({
 
         {/* Bannern dimmar bara mitten av hjulet. Ytterkanten lämnas fri så
             att den lysande vinnarrutan syns bakom texten. */}
-        <div className={'result-banner' + (flashValue ? ' show' : '') + (isBonusFlash ? ' bonus' : '')}>
+        <div className={'result-banner'
+          + (flashValue ? ' show' : '')
+          + (isBonusFlash ? ' bonus' : '')
+          + (isJackpotFlash ? ' jackpot' : '')
+          + (isExtraspinFlash ? ' extraspin' : '')}>
           {flashValue ? (
             <span className="result-pill">
-              {isBonusFlash
+              {isJackpotFlash
+                ? <>🎉<br /><b>JACKPOT!</b></>
+                : isExtraspinFlash
+                ? <>🔄<br /><b>Gratissnurr!</b></>
+                : isBonusFlash
                 ? <>🎁<br /><b>BONUS!</b></>
                 : <>Du fick <br /><b>{flashValue}</b>!</>}
             </span>
@@ -60,6 +71,7 @@ export default function Stage({
 
       <div className="stage-actions">
         <button className="spin-btn" disabled={spinning} onClick={onSpin}>Snurra!</button>
+        <button className="ghost-btn" disabled={spinning} onClick={onTurbo}>⚡ Turbo</button>
       </div>
     </div>
   );

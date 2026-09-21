@@ -87,7 +87,10 @@ export function useWheelSpin(){
       return next;
     });
 
-    const targetIndex = pickIndexAvoiding(pool, spec.avoid);
+    // Turboläget bestämmer köket i förväg (så att övriga hjuls pooler kan
+    // byggas innan alla snurr startar samtidigt) och skickar då in exakt
+    // vilket index hjulet ska landa på, istället för att låta oss slumpa.
+    const targetIndex = spec.targetIndex != null ? spec.targetIndex : pickIndexAvoiding(pool, spec.avoid);
 
     setSpinDur(prev => ({ ...prev, [key]: durationMs }));
     setRotation(prev => {

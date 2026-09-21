@@ -5,8 +5,9 @@ const GOLD_COLORS = ['#FFC933', '#FFE680', '#FFA928', '#FFF3B0', '#E8A317'];
 // förinställningar gör att anropsstället bara behöver säga VARFÖR det firar,
 // inte hur många partiklar det ska bli.
 export const CONFETTI_PRESETS = {
-  win:   { durationMs: 2500, count: 140, colors: BASE_COLORS, emojis: [],          origin: 'top',    gravity: 1 },
-  bonus: { durationMs: 1800, count: 90,  colors: GOLD_COLORS, emojis: ['🎁', '⭐'], origin: 'center', gravity: 0.85 }
+  win:     { durationMs: 2500, count: 140, colors: BASE_COLORS, emojis: [],               origin: 'top',    gravity: 1 },
+  bonus:   { durationMs: 1800, count: 90,  colors: GOLD_COLORS, emojis: ['🎁', '⭐'],      origin: 'center', gravity: 0.85 },
+  jackpot: { durationMs: 2800, count: 220, colors: GOLD_COLORS, emojis: ['🎉', '⭐', '💰'], origin: 'center', gravity: 0.7 }
 };
 
 function makePiece(width, height, opts){

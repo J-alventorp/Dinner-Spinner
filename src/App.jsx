@@ -1,20 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { THEMES, STATIONS } from './data/themes.js';
 import { CUISINES, cuisinePool } from './data/cuisines.js';
-import { BONUS_TOKEN, injectBonus, shouldRollBonus, randomBonusExtra } from './data/bonus.js';
-import { RESULT_HOLD_MS } from './data/spinTiming.js';
+import { BONUS_TOKEN, injectBonus, shouldRollBonus, randomBonusExtra, rollBonusKind } from './data/bonus.js';
+import { RESULT_HOLD_MS, TURBO_MIN_MS, TURBO_MAX_MS, TURBO_STAGGER_MS } from './data/spinTiming.js';
 import { useLocalStorageState } from './utils/storage.js';
 import { useWheelSpin } from './hooks/useWheelSpin.js';
 import { useStats } from './hooks/useStats.js';
 import {
   isMuted, setMuted,
-  playClick, playWin, playBonus, playFanfare
+  playClick, playWin, playBonus, playJackpot, playFanfare
 } from './utils/sound.js';
 import Header from './components/Header.jsx';
 import ThemeRow from './components/ThemeRow.jsx';
 import StatsBadge from './components/StatsBadge.jsx';
 import Stepper from './components/Stepper.jsx';
 import Stage from './components/Stage.jsx';
+import TurboStage from './components/TurboStage.jsx';
 import Tray from './components/Tray.jsx';
 import FinalCard from './components/FinalCard.jsx';
 import ConfettiCanvas from './components/ConfettiCanvas.jsx';
@@ -42,6 +43,10 @@ export default function App(){
   const [results, setResults] = useState(EMPTY_RESULTS);
   const [resultFlash, setResultFlash] = useState(null);
   const [historyLogged, setHistoryLogged] = useState(false);
+  const [readyForFinal, setReadyForFinal] = useState(false);
+  const [freeSpinPending, setFreeSpinPending] = useState(false);
+  const [turboMode, setTurboMode] = useState(false);
+  const [turboPools, setTurboPools] = useState({});
   const [activeModal, setActiveModal] = useState(null);
   const [confetti, setConfetti] = useState(null);
   const [shake, setShake] = useState(false);
@@ -53,7 +58,7 @@ export default function App(){
 
   const { stats, countSpin, countBonus, countPlate } = useStats();
   const {
-    rotation, spinDur, spinning, landed,
+    rotation, spinDur, spinning, spinningKeys, landed,
     spin, reset: resetWheel
   } = useWheelSpin();
 
@@ -61,6 +66,7 @@ export default function App(){
   // nollställningen inte kan slå till efteråt mot ett state som inte finns
   // längre. Alla fördröjda kedjor nedan kontrollerar den.
   const resetTokenRef = useRef(0);
+  const freeSpinGrantedAtIdxRef = useRef(null);
 
   const stations = STATIONS;
   const currentStation = stations[Math.min(stationIdx, stations.length - 1)];
@@ -71,6 +77,15 @@ export default function App(){
     () => CUISINES.find(c => c.label === results.cuisine),
     [results.cuisine]
   );
+
+  // Turboläget snurrar alla stationer samtidigt i ett rutnät. Grönsaker (tre
+  // val) plattas ut till tre egna celler — `slotKey` skiljer dem åt i
+  // snurrmotorn, `key` pekar tillbaka på den riktiga stationen.
+  const turboSlots = useMemo(() => stations.flatMap(st => (
+    st.picks > 1
+      ? Array.from({ length: st.picks }, (_, i) => ({ key: st.key, slotKey: st.key + ':' + i, label: st.label, icon: st.icon }))
+      : [{ key: st.key, slotKey: st.key, label: st.label, icon: st.icon }]
+  )), [stations]);
 
   // --- pooler --------------------------------------------------------------
 
@@ -151,6 +166,17 @@ export default function App(){
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allDone, historyLogged]);
 
+  // I sekventiellt läge sätts readyForFinal i handleLanded, tajmat mot
+  // sista stationens egen resultatbanner. I turboläget landar alla hjul
+  // oberoende av varandra, så det finns ingen enskild "sista snurr"-
+  // callback att haka i — vänta bara in RESULT_HOLD_MS från det att allt
+  // är klart innan tallriken visas.
+  useEffect(() => {
+    if(!turboMode || !allDone || readyForFinal) return;
+    const t = setTimeout(() => setReadyForFinal(true), RESULT_HOLD_MS);
+    return () => clearTimeout(t);
+  }, [turboMode, allDone, readyForFinal]);
+
   // --- resultathantering ---------------------------------------------------
 
   function applyResult(key, value){
@@ -174,6 +200,7 @@ export default function App(){
 
     const st = stations.find(s => s.key === key);
     const token = resetTokenRef.current;
+    const isLastStation = st.key === stations[stations.length - 1].key;
     setResultFlash({ value, kind: 'normal' });
     playWin();
     applyResult(key, value);
@@ -186,6 +213,7 @@ export default function App(){
           if(resetTokenRef.current !== token) return;
           setSubPick(0);
           setResultFlash(null);
+          if(isLastStation) setReadyForFinal(true);
           advanceStation();
         }, RESULT_HOLD_MS);
       } else {
@@ -198,22 +226,39 @@ export default function App(){
       setTimeout(() => {
         if(resetTokenRef.current !== token) return;
         setResultFlash(null);
+        if(isLastStation) setReadyForFinal(true);
         advanceStation();
       }, RESULT_HOLD_MS);
     }
   }
 
-  // Bonusrutan. Ger en bonusextra direkt, utan omväg, och snurrar sedan om
-  // stationen gratis (utan bonusruta i hjulet).
+  // Bonusrutan. Ger en bonusextra (eller jackpot/extraspin) direkt, utan
+  // omväg, och snurrar sedan om stationen gratis (utan bonusruta i hjulet).
   function handleBonusLanded(key){
     const token = resetTokenRef.current;
     const landedPoolKey = poolKey;
+    const kind = rollBonusKind();
     countBonus();
-    playBonus();
-    fireConfetti('bonus');
     doShake();
-    awardExtras(1);
-    setResultFlash({ value: 'BONUS', kind: 'bonus' });
+
+    if(kind === 'jackpot'){
+      playJackpot();
+      fireConfetti('jackpot');
+      awardExtras(3);
+      setResultFlash({ value: 'JACKPOT', kind: 'jackpot' });
+    } else if(kind === 'extraspin'){
+      playBonus();
+      fireConfetti('bonus');
+      freeSpinGrantedAtIdxRef.current = stationIdx;
+      setFreeSpinPending(true);
+      setResultFlash({ value: 'GRATISSNURR', kind: 'extraspin' });
+    } else {
+      playBonus();
+      fireConfetti('bonus');
+      awardExtras(1);
+      setResultFlash({ value: 'BONUS', kind: 'bonus' });
+    }
+
     setTimeout(() => {
       if(resetTokenRef.current !== token) return;
       setResultFlash(null);
@@ -256,6 +301,80 @@ export default function App(){
     });
   }
 
+  // Turboläget: alla hjul snurrar samtidigt. Köket lottas fram synkront
+  // INNAN något hjul startar, så att övriga hjuls pooler (som är
+  // köksberoende) redan finns klara när de börjar snurra — kökshjulet
+  // tvingas sedan landa på exakt det värdet via `targetIndex`. Bonusrutor
+  // hoppas över i turbo för att slippa krångliga omsnurrar mitt i en
+  // samtidig batch.
+  function handleTurboSpin(){
+    if(spinning) return;
+    resetTokenRef.current++;
+    resetWheel();
+    setStationIdx(0);
+    setSubPick(0);
+    setResults(EMPTY_RESULTS);
+    setHistoryLogged(false);
+    setResultFlash(null);
+    setReadyForFinal(false);
+    setFreeSpinPending(false);
+    setBonusPools({});
+    setConfetti(null);
+    setTurboMode(true);
+    countSpin();
+
+    const cuisineIdx = Math.floor(Math.random() * CUISINES.length);
+    const chosenCuisine = CUISINES[cuisineIdx];
+
+    const pools = {};
+    turboSlots.forEach(slot => {
+      if(slot.key === 'cuisine'){
+        pools[slot.slotKey] = CUISINES.map(c => c.label);
+      } else {
+        const cuisineDefault = cuisinePool(chosenCuisine, theme, slot.key);
+        pools[slot.slotKey] = (custom[slot.key] && custom[slot.key].length)
+          ? custom[slot.key]
+          : (cuisineDefault || THEMES[theme][slot.key]);
+      }
+    });
+    setTurboPools(pools);
+
+    turboSlots.forEach((slot, i) => {
+      const durationMs = TURBO_MIN_MS + Math.random() * (TURBO_MAX_MS - TURBO_MIN_MS);
+      setTimeout(() => {
+        spin({
+          key: slot.slotKey,
+          pool: pools[slot.slotKey],
+          avoid: [],
+          durationMs,
+          targetIndex: slot.key === 'cuisine' ? cuisineIdx : undefined,
+          onLanded: (value) => {
+            if(slot.key === 'veggie'){
+              setResults(prev => ({ ...prev, veggie: prev.veggie.concat([value]) }));
+            } else {
+              setResults(prev => ({ ...prev, [slot.key]: value }));
+            }
+          }
+        });
+      }, i * TURBO_STAGGER_MS);
+    });
+  }
+
+  function exitTurbo(){
+    setTurboMode(false);
+    fullReset();
+  }
+
+  // Gratissnurret från en extraspin-bonus konsumeras automatiskt så fort
+  // spelaren når nästa station — inget klick behövs.
+  useEffect(() => {
+    if(!freeSpinPending || spinning || allDone) return;
+    if(stationIdx === freeSpinGrantedAtIdxRef.current) return;
+    setFreeSpinPending(false);
+    handleSpin();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [freeSpinPending, stationIdx, spinning, allDone]);
+
   // --- nollställning och val -----------------------------------------------
 
   function rerollStation(key){
@@ -272,6 +391,8 @@ export default function App(){
     setBonusPools({});
     setHistoryLogged(false);
     setResultFlash(null);
+    setReadyForFinal(false);
+    setFreeSpinPending(false);
     setStationIdx(stations.findIndex(s => s.key === key));
   }
 
@@ -283,8 +404,11 @@ export default function App(){
     setResults(EMPTY_RESULTS);
     setHistoryLogged(false);
     setResultFlash(null);
+    setReadyForFinal(false);
+    setFreeSpinPending(false);
     setBonusPools({});
     setConfetti(null);
+    setTurboMode(false);
   }
 
   function handleSetTheme(key){
@@ -369,12 +493,24 @@ export default function App(){
         />
 
         <div id="gameArea">
-          {allDone ? (
+          {allDone && readyForFinal ? (
             <FinalCard
               itemsList={results}
               stations={stations}
               onSaveFavorite={saveFavorite}
               onRestart={fullReset}
+            />
+          ) : turboMode ? (
+            <TurboStage
+              slots={turboSlots}
+              pools={turboPools}
+              rotation={rotation}
+              spinDur={spinDur}
+              spinningKeys={spinningKeys}
+              landed={landed}
+              spinning={spinning}
+              onSpinAll={handleTurboSpin}
+              onRestart={exitTurbo}
             />
           ) : (
             <Stage
@@ -388,6 +524,7 @@ export default function App(){
               resultFlash={resultFlash}
               winnerIndex={!spinning && landed[currentStation.key] ? landed[currentStation.key].index : null}
               onSpin={handleSpin}
+              onTurbo={handleTurboSpin}
             />
           )}
         </div>

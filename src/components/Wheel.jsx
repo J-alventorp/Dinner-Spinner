@@ -14,6 +14,19 @@ function arcPath(cx, cy, r, a0, a1){
   return ['M', cx, cy, 'L', s.x, s.y, 'A', r, r, 0, large, 1, e.x, e.y, 'Z'].join(' ');
 }
 
+// Väljer mörk eller ljus text beroende på segmentets bakgrundsfärg, så
+// texten alltid går att läsa oavsett hur mörk/ljus/mättad paletten är.
+function contrastTextColor(hex){
+  const clean = (hex || '').replace('#', '');
+  if(clean.length !== 6) return '#2A1730';
+  const r = parseInt(clean.slice(0, 2), 16) / 255;
+  const g = parseInt(clean.slice(2, 4), 16) / 255;
+  const b = parseInt(clean.slice(4, 6), 16) / 255;
+  const lin = v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  const luminance = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+  return luminance > 0.42 ? '#2A1730' : '#FFF7E8';
+}
+
 function PatternDefs({ patternId }){
   switch(patternId){
     case 'pat-meat':
@@ -85,11 +98,13 @@ export default function Wheel({
       const a0 = i * seg, a1 = (i + 1) * seg, mid = a0 + seg / 2;
       const pt = polar(cx, cy, r * 0.62, mid);
       const isBonus = item === BONUS_TOKEN;
+      const color = isBonus ? BONUS_SLICE_FILL : style.palette[i % style.palette.length];
       return {
         key: item + '-' + i,
         index: i,
         path: arcPath(cx, cy, r, a0, a1),
-        color: isBonus ? BONUS_SLICE_FILL : style.palette[i % style.palette.length],
+        color,
+        textColor: contrastTextColor(color),
         isBonus,
         // Bonusrutan visas som bara gåvan — hela texten "🎁 BONUS" får inte
         // plats läsbart i en smal tårtbit.
@@ -128,7 +143,7 @@ export default function Wheel({
             textAnchor="middle" dominantBaseline="middle"
             fontSize={s.isBonus ? fontSize * 1.6 : fontSize}
             fontFamily="'Nunito Sans', sans-serif" fontWeight="800"
-            fill="#2A1730"
+            fill={s.isBonus ? '#2A1730' : s.textColor}
             transform={`rotate(${s.rotate} ${s.x} ${s.y})`}
           >{s.text}</text>
         </g>

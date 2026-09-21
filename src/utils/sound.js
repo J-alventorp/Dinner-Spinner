@@ -182,6 +182,17 @@ export function playBonus(){
   vibrate([25, 40, 25, 40, 60]);
 }
 
+// Jackpot. Längre och mer uppåtstigande arpeggio än den vanliga bonusen, med
+// ett andra lager en oktav upp för extra glitter.
+export function playJackpot(){
+  const ctx = ctxOrNull();
+  if(!ctx) return;
+  arpeggio(ctx, 523.25, [0, 4, 7, 12, 16, 19, 24], { stepTime: 0.06, dur: 0.3, gain: 0.14 });
+  arpeggio(ctx, 1046.5, [0, 4, 7, 12], { stepTime: 0.09, dur: 0.22, gain: 0.08 });
+  noiseBurst(ctx, { freq: 4200, dur: 0.5, gain: 0.06, time: ctx.currentTime + 0.12 });
+  vibrate([30, 40, 30, 40, 30, 40, 90]);
+}
+
 // Hela tallriken klar.
 export function playFanfare(){
   const ctx = ctxOrNull();
