@@ -1,15 +1,12 @@
 const BASE_COLORS = ['#E2472F', '#F2A63B', '#7C9A3A', '#3B6EA5', '#B23B6E', '#F5CB4F', '#FF6B35'];
 const GOLD_COLORS = ['#FFC933', '#FFE680', '#FFA928', '#FFF3B0', '#E8A317'];
-const RAINBOW_COLORS = ['#ff2d95', '#ff9f1c', '#ffe14d', '#3ddc84', '#00c2ff', '#9b5cff'];
 
 // Varje effekt i appen har sin egen känsla. Att hålla dem som namngivna
 // förinställningar gör att anropsstället bara behöver säga VARFÖR det firar,
 // inte hur många partiklar det ska bli.
 export const CONFETTI_PRESETS = {
-  win:     { durationMs: 2500, count: 140, colors: BASE_COLORS, emojis: [],                       origin: 'top',    gravity: 1 },
-  bonus:   { durationMs: 1800, count: 90,  colors: GOLD_COLORS, emojis: ['🎁', '⭐'],              origin: 'center', gravity: 0.85 },
-  jackpot: { durationMs: 2600, count: 170, colors: GOLD_COLORS, emojis: ['🎰', '💰', '⭐'],        origin: 'center', gravity: 0.9 },
-  secret:  { durationMs: 3200, count: 220, colors: RAINBOW_COLORS, emojis: ['🌈', '✨', '🦄', '⭐'], origin: 'top',    gravity: 0.8 }
+  win:   { durationMs: 2500, count: 140, colors: BASE_COLORS, emojis: [],          origin: 'top',    gravity: 1 },
+  bonus: { durationMs: 1800, count: 90,  colors: GOLD_COLORS, emojis: ['🎁', '⭐'], origin: 'center', gravity: 0.85 }
 };
 
 function makePiece(width, height, opts){

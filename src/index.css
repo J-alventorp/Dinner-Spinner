@@ -248,9 +248,7 @@ header{ text-align:center; padding-top:4px; }
 @keyframes rimSpin{
   to{ transform: rotate(360deg); }
 }
-/* Varaktigheten kommer från JS via --spin-ms, som Wheel sätter per hjul.
-   Turbo och jackpot behöver olika tider på hjul som visas samtidigt, och
-   skicklighetslägets inbromsning är kortare än ett vanligt snurr. */
+/* Varaktigheten kommer från JS via --spin-ms, som Wheel sätter per hjul. */
 svg.wheel{
   width:100%; height:100%;
   border-radius:50%;
@@ -258,21 +256,12 @@ svg.wheel{
   transform: rotate(0deg);
   transition: transform var(--spin-ms, 3100ms) cubic-bezier(.13,.7,.24,1);
 }
-/* Friersnurret drivs av rAF bildruta för bildruta — en transition ovanpå
-   det skulle bara släpa efter. */
-svg.wheel.wheel-free{ transition: none; }
 
 @keyframes winnerPulse{
   0%,100%{ opacity:1; }
   50%{ opacity:.45; }
 }
 .slice-winner{ animation: winnerPulse 1s ease-in-out infinite; }
-
-@keyframes goldenGlow{
-  0%,100%{ opacity:.65; }
-  50%{ opacity:1; }
-}
-.slice-golden{ animation: goldenGlow .9s ease-in-out infinite; }
 .hub{
   position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
   width:54px;height:54px;border-radius:50%;
@@ -473,7 +462,7 @@ footer{ text-align:center; font-size:11.5px; color:var(--cream-dim); margin-top:
 }
 
 /* ============================================================
-   LEKFULLHET: lägen, bonus, minispel, gyllene läget
+   LEKFULLHET: statistik och bonusruta
    ============================================================ */
 
 /* STATISTIK-BADGE */
@@ -485,30 +474,6 @@ footer{ text-align:center; font-size:11.5px; color:var(--cream-dim); margin-top:
 .stats-badge span{
   background:var(--surface); border:1px solid var(--ring);
   border-radius:999px; padding:3px 9px;
-}
-.stats-tease{
-  color:var(--accent); border-color:var(--accent) !important;
-  animation: teasePulse 2.2s ease-in-out infinite;
-}
-@keyframes teasePulse{
-  0%,100%{ opacity:.7; }
-  50%{ opacity:1; }
-}
-.stats-unlocked{
-  background: linear-gradient(90deg,#ff2d95,#ff9f1c,#ffe14d,#3ddc84,#00c2ff,#9b5cff) !important;
-  border-color:transparent !important;
-}
-
-/* LÄGESVÄLJARE */
-.mode-row{ margin-top:-6px; }
-.mode-row .chip[disabled]{ opacity:.5; }
-.secret-chip{
-  border-color:#9b5cff !important;
-}
-.secret-chip.active{
-  background: linear-gradient(90deg,#ff2d95,#ff9f1c,#ffe14d,#3ddc84,#00c2ff,#9b5cff) !important;
-  border-color:transparent !important;
-  color:#2A1730 !important;
 }
 
 /* SNURRTIPS */
@@ -527,16 +492,6 @@ footer{ text-align:center; font-size:11.5px; color:var(--cream-dim); margin-top:
 }
 .spin-btn:not([disabled]){ animation: btnBreathe 2.6s ease-in-out infinite; }
 .spin-btn:active{ animation:none; }
-.stop-btn{
-  background:#ffe14d;
-  color:#2A1730;
-  box-shadow:0 4px 0 #b89a12;
-  animation: stopPulse .5s ease-in-out infinite !important;
-}
-@keyframes stopPulse{
-  0%,100%{ transform:scale(1); }
-  50%{ transform:scale(1.08); }
-}
 
 /* NAVET POPPAR NÄR HJULET LANDAT */
 @keyframes hubPop{
@@ -588,161 +543,7 @@ footer{ text-align:center; font-size:11.5px; color:var(--cream-dim); margin-top:
 }
 .tray-slot.filled{ border-style:solid; animation: slotPop .35s ease; }
 
-/* TURBOLÄGET */
-.turbo-grid{
-  display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; width:100%;
-}
-.turbo-cell{
-  display:flex; flex-direction:column; align-items:center; gap:4px;
-  background:var(--bg-alt); border:1px solid var(--ring);
-  border-radius:14px; padding:8px 4px;
-}
-.turbo-cell.landed{
-  border-color:var(--accent);
-  animation: slotPop .35s ease;
-}
-.turbo-wheel{
-  position:relative;
-  width:100%; aspect-ratio:1; max-width:84px;
-  border-radius:50%;
-  box-shadow: inset 0 0 0 2px var(--ring);
-}
-.turbo-pointer{
-  position:absolute; top:-7px; left:50%; transform:translateX(-50%);
-  width:0;height:0;
-  border-left:6px solid transparent;
-  border-right:6px solid transparent;
-  border-top:10px solid var(--accent);
-  z-index:3;
-}
-.turbo-label{ font-size:9px; font-weight:800; color:var(--cream-dim); text-align:center; line-height:1.15; }
-.turbo-value{ font-size:10px; font-weight:800; text-align:center; line-height:1.2; min-height:24px; }
-
-/* JACKPOTLÄGET */
-.slot-row{
-  display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; width:100%;
-  padding:10px; border-radius:18px;
-  background:var(--bg-alt); border:1px solid var(--ring);
-}
-.slot-row.jackpot{
-  border-color:#FFC933;
-  box-shadow:0 0 0 3px rgba(255,201,51,.28);
-}
-.slot-reel{ display:flex; flex-direction:column; align-items:center; gap:6px; }
-.slot-wheel{
-  position:relative; width:100%; aspect-ratio:1;
-  border-radius:50%;
-  box-shadow: inset 0 0 0 2px var(--ring);
-}
-.slot-reel.hit .slot-wheel{
-  box-shadow: inset 0 0 0 3px #FFC933, 0 0 14px rgba(255,201,51,.6);
-  animation: slotPop .4s ease;
-}
-.slot-value{ font-size:10.5px; font-weight:800; text-align:center; line-height:1.2; min-height:26px; }
-.slot-outcome{
-  font-family:var(--font-display); font-size:17px; text-align:center;
-  min-height:24px; opacity:0; transition:opacity .25s ease;
-}
-.slot-outcome.show{ opacity:1; }
-.slot-row.jackpot + .slot-outcome b{ color:#FFC933; }
-
-/* MINISPEL */
-.mini-overlay{ align-items:center; }
-.mini-modal{
-  border-radius:24px;
-  max-width:420px;
-  margin:0 12px;
-  text-align:center;
-}
-.mini-scoreboard{
-  display:flex; justify-content:center; gap:10px; flex-wrap:wrap;
-  font-size:11.5px; font-weight:800; color:var(--cream-dim); margin-bottom:14px;
-}
-.mini-scoreboard span{
-  background:var(--bg-alt); border:1px solid var(--ring);
-  border-radius:999px; padding:4px 10px;
-}
-.mini-hud{
-  display:flex; justify-content:space-between; align-items:center;
-  font-weight:800; font-size:15px; margin-bottom:8px;
-}
-.mini-timer.urgent{ color:var(--accent); animation: teasePulse .5s ease-in-out infinite; }
-.mini-field{
-  position:relative;
-  width:100%; height:300px;
-  background:var(--bg-alt);
-  border:1px solid var(--ring);
-  border-radius:16px;
-  overflow:hidden;
-  touch-action:manipulation;
-}
-.mini-item{
-  position:absolute;
-  transform:translate(-50%,-50%);
-  background:none; border:none; padding:0;
-  font-size:30px; line-height:1;
-  filter: drop-shadow(0 2px 3px rgba(0,0,0,.4));
-}
-.mini-item.bad{ font-size:28px; }
-.mini-result-title{
-  font-family:var(--font-display); font-size:24px; margin:6px 0 4px;
-  color:var(--accent);
-}
-
-/* UPPLÅSNINGSRUTAN */
-.unlock-overlay{ align-items:center; }
-.unlock-card{
-  background:var(--surface);
-  border:2px solid transparent;
-  background-image: linear-gradient(var(--surface),var(--surface)), linear-gradient(90deg,#ff2d95,#ff9f1c,#ffe14d,#3ddc84,#00c2ff,#9b5cff);
-  background-origin:border-box;
-  background-clip: padding-box, border-box;
-  border-radius:24px;
-  padding:24px 20px;
-  margin:0 14px;
-  max-width:400px;
-  text-align:center;
-  animation: unlockIn .5s cubic-bezier(.2,1.3,.4,1);
-}
-@keyframes unlockIn{
-  from{ opacity:0; transform:scale(.8) translateY(20px); }
-  to{ opacity:1; transform:none; }
-}
-.unlock-emoji{ font-size:54px; line-height:1; }
-.unlock-card h2{
-  font-family:var(--font-display); font-size:22px; margin:8px 0 6px;
-  background: linear-gradient(90deg,#ff2d95,#ff9f1c,#ffe14d,#3ddc84,#00c2ff,#9b5cff);
-  -webkit-background-clip:text; background-clip:text; color:transparent;
-}
-.unlock-card p{ font-size:13.5px; color:var(--cream-dim); font-weight:600; margin:0 0 12px; }
-.unlock-list{
-  list-style:none; margin:0 0 16px; padding:0;
-  display:flex; flex-direction:column; gap:6px;
-  font-size:13px; font-weight:700; text-align:left;
-}
-
-/* GYLLENE LÄGET PÅ */
-:root[data-secret="on"] body{
-  background: radial-gradient(circle at 50% -10%, #3a1d4d, var(--bg) 60%);
-}
-:root[data-secret="on"] .stage,
-:root[data-secret="on"] .tray{
-  box-shadow:0 8px 0 var(--shadow), 0 0 22px rgba(155,92,255,.35);
-}
-:root[data-secret="on"] .brand span{
-  background: linear-gradient(90deg,#ff2d95,#ff9f1c,#ffe14d,#3ddc84,#00c2ff,#9b5cff);
-  -webkit-background-clip:text; background-clip:text; color:transparent;
-  animation: hueShift 6s linear infinite;
-}
-@keyframes hueShift{
-  to{ filter: hue-rotate(360deg); }
-}
-
 .icon-btn.muted{ opacity:.6; }
-
-@media (max-width: 380px){
-  .turbo-grid{ grid-template-columns:repeat(2, 1fr); }
-}
 
 @media (prefers-reduced-motion: reduce){
   svg.wheel{ transition-duration: .4s !important; }
@@ -750,21 +551,13 @@ footer{ text-align:center; font-size:11.5px; color:var(--cream-dim); margin-top:
   /* Allt som loopar stängs av — enstaka övergångar får vara kvar, de är
      korta och bär information om vad som just hände. */
   .spin-btn:not([disabled]),
-  .stop-btn,
   .slice-winner,
-  .slice-golden,
-  .wheel-outer.lit::after,
-  .stats-tease,
-  .mini-timer.urgent,
-  :root[data-secret="on"] .brand span{
+  .wheel-outer.lit::after{
     animation:none !important;
   }
   .app.shake,
   .hub-pop,
-  .tray-slot.filled,
-  .turbo-cell.landed,
-  .slot-reel.hit .slot-wheel,
-  .unlock-card{
+  .tray-slot.filled{
     animation:none !important;
   }
   .pointer-spin{ animation:none; }

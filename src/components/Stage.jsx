@@ -4,9 +4,8 @@ import SparkCanvas from './SparkCanvas.jsx';
 import { randomTip } from '../data/spinTips.js';
 
 export default function Stage({
-  station, pool, subPick, rotation, durationMs, spinning, free,
-  resultFlash, winnerIndex, goldenIndex, secretOn, skillMode,
-  onSpin, onStop
+  station, pool, subPick, rotation, durationMs, spinning,
+  resultFlash, winnerIndex, onSpin
 }){
   const [tip, setTip] = useState('');
 
@@ -28,23 +27,17 @@ export default function Stage({
       {station.picks > 1 && (
         <p className="stage-sub">Snurrning {subPick + 1} av {station.picks}</p>
       )}
-      {skillMode && !spinning && (
-        <p className="stage-sub">Sikta på den gyllene rutan 🎯</p>
-      )}
 
       <div className="wheel-wrap">
         <div className={'pointer' + (spinning ? ' pointer-spin' : '')} />
-        {spinning && <SparkCanvas palette={secretOn ? 'rainbow' : 'normal'} intensity={free ? 1.6 : 1} />}
+        {spinning && <SparkCanvas palette="normal" intensity={1} />}
         <div className={'wheel-outer' + (spinning ? ' lit' : '')}>
           <Wheel
             items={pool}
             rotation={rotation}
             durationMs={durationMs}
-            free={free}
             stationKey={station.key}
             winnerIndex={winnerIndex}
-            goldenIndex={goldenIndex}
-            secretOn={secretOn}
             uid={'stage-' + station.key}
           />
         </div>
@@ -56,23 +49,17 @@ export default function Stage({
           {flashValue ? (
             <span className="result-pill">
               {isBonusFlash
-                ? <>🎁<br /><b>BONUSSNURR!</b></>
+                ? <>🎁<br /><b>BONUS!</b></>
                 : <>Du fick <br /><b>{flashValue}</b>!</>}
             </span>
           ) : null}
         </div>
       </div>
 
-      <p className={'spin-tip' + (tip ? ' show' : '')}>{tip || ' '}</p>
+      <p className={'spin-tip' + (tip ? ' show' : '')}>{tip || ' '}</p>
 
       <div className="stage-actions">
-        {free ? (
-          <button className="spin-btn stop-btn" onClick={onStop}>STOPP!</button>
-        ) : (
-          <button className="spin-btn" disabled={spinning} onClick={onSpin}>
-            {skillMode ? 'Starta hjulet 🎯' : 'Snurra!'}
-          </button>
-        )}
+        <button className="spin-btn" disabled={spinning} onClick={onSpin}>Snurra!</button>
       </div>
     </div>
   );

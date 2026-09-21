@@ -5,7 +5,6 @@ import { loadJSON, saveJSON } from './storage.js';
 
 let audioCtx = null;
 let muted = loadJSON('sfd_muted', false) === true;
-let pack = 'normal';
 
 function getAudioContext(){
   if(!audioCtx){
@@ -34,16 +33,6 @@ export function setMuted(next){
   return muted;
 }
 
-// Gyllene läget byter till fyrkantsvågor rakt igenom — samma melodier, men
-// med chiptune-karaktär istället för mjuka toner.
-export function setSoundPack(nextPack){
-  pack = nextPack === 'secret' ? 'secret' : 'normal';
-}
-
-function waveFor(preferred){
-  return pack === 'secret' ? 'square' : preferred;
-}
-
 // --- primitiver ------------------------------------------------------------
 
 function tone(ctx, opts){
@@ -53,7 +42,7 @@ function tone(ctx, opts){
 
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
-  osc.type = waveFor(opts.type || 'triangle');
+  osc.type = opts.type || 'triangle';
   osc.frequency.setValueAtTime(opts.freq, time);
   if(opts.slideTo){
     osc.frequency.exponentialRampToValueAtTime(Math.max(opts.slideTo, 1), time + dur);
@@ -164,23 +153,6 @@ export function playSpinSound(durationMs){
   }
 }
 
-// Jämna tick i konstant takt — används av skicklighetsläget där hjulet
-// snurrar med oförändrad hastighet tills spelaren stoppar det.
-export function playFreeSpinLoop(){
-  const ctx = ctxOrNull();
-  if(!ctx) return null;
-  let cancelled = false;
-  const id = setInterval(() => {
-    if(cancelled || muted) return;
-    const c = getAudioContext();
-    if(c) playTick(c, c.currentTime + 0.005, 0.1);
-  }, 90);
-  return function stop(){
-    cancelled = true;
-    clearInterval(id);
-  };
-}
-
 export function playClick(){
   const ctx = ctxOrNull();
   if(!ctx) return;
@@ -191,13 +163,6 @@ export function playWhoosh(){
   const ctx = ctxOrNull();
   if(!ctx) return;
   noiseBurst(ctx, { freq: 900, dur: 0.3, gain: 0.07, filterType:'lowpass' });
-}
-
-export function playLand(){
-  const ctx = ctxOrNull();
-  if(!ctx) return;
-  tone(ctx, { freq: 420, type:'triangle', dur: 0.1, gain: 0.14, slideTo: 620 });
-  vibrate(30);
 }
 
 export function playWin(){
@@ -215,17 +180,6 @@ export function playBonus(){
   arpeggio(ctx, 523.25, [0, 4, 7, 12, 16], { stepTime: 0.075, dur: 0.28, gain: 0.14 });
   noiseBurst(ctx, { freq: 3200, dur: 0.4, gain: 0.05, time: ctx.currentTime + 0.1 });
   vibrate([25, 40, 25, 40, 60]);
-}
-
-export function playJackpot(){
-  const ctx = ctxOrNull();
-  if(!ctx) return;
-  arpeggio(ctx, 392, [0, 7, 12, 16, 19, 24], { stepTime: 0.065, dur: 0.3, gain: 0.15 });
-  const start = ctx.currentTime + 0.42;
-  [0, 4, 7, 12].forEach((s, i) => {
-    tone(ctx, { freq: 784 * Math.pow(2, s / 12), time: start + i * 0.05, dur: 0.5, gain: 0.11 });
-  });
-  vibrate([40, 30, 40, 30, 40, 30, 120]);
 }
 
 // Hela tallriken klar.
@@ -248,39 +202,3 @@ export function playFanfare(){
   vibrate([50, 50, 50, 50, 150]);
 }
 
-export function playSecretUnlock(){
-  const ctx = ctxOrNull();
-  if(!ctx) return;
-  // Hel skala uppåt — det ska låta som att något öppnar sig.
-  const steps = [0, 2, 4, 5, 7, 9, 11, 12, 16, 19, 24];
-  steps.forEach((s, i) => {
-    tone(ctx, {
-      freq: 261.63 * Math.pow(2, s / 12),
-      type:'square',
-      time: ctx.currentTime + 0.02 + i * 0.06,
-      dur: 0.3,
-      gain: 0.12
-    });
-  });
-  vibrate([30, 30, 30, 30, 30, 30, 200]);
-}
-
-export function playMiniHit(){
-  const ctx = ctxOrNull();
-  if(!ctx) return;
-  tone(ctx, { freq: 880, type:'square', dur: 0.09, gain: 0.11, slideTo: 1320 });
-  vibrate(20);
-}
-
-export function playMiniMiss(){
-  const ctx = ctxOrNull();
-  if(!ctx) return;
-  tone(ctx, { freq: 220, type:'sawtooth', dur: 0.22, gain: 0.11, slideTo: 90 });
-  vibrate([60, 40, 60]);
-}
-
-export function playCountdown(final){
-  const ctx = ctxOrNull();
-  if(!ctx) return;
-  tone(ctx, { freq: final ? 880 : 440, type:'square', dur: final ? 0.3 : 0.1, gain: 0.11 });
-}

@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { STATIONS, THEMES } from '../../data/themes.js';
+import { cuisinePool } from '../../data/cuisines.js';
 
-export default function EditWheelsModal({ theme, custom, onAddItem, onRemoveItem, onResetTab, onClose }){
+export default function EditWheelsModal({ theme, cuisine, custom, onAddItem, onRemoveItem, onResetTab, onClose }){
   const [editTab, setEditTab] = useState('protein');
   const [inputValue, setInputValue] = useState('');
 
-  const pool = (custom[editTab] && custom[editTab].length) ? custom[editTab] : THEMES[theme][editTab];
+  const defaultPool = cuisinePool(cuisine, theme, editTab) || THEMES[theme][editTab];
+  const pool = (custom[editTab] && custom[editTab].length) ? custom[editTab] : defaultPool;
 
   const handleAdd = () => {
     const val = inputValue.trim();

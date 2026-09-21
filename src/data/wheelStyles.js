@@ -1,5 +1,3 @@
-import { SECRET_WHEEL_STYLE } from './secret.js';
-
 // Varje station har sin egen färgkodning (rött = protein, grönt = grönsaker
 // osv.) så att man känner igen hjulet innan man läst rubriken. Paletterna är
 // medvetet mättade — dova toner gör hjulet trist i rörelse.
@@ -10,8 +8,7 @@ export const WHEEL_STYLES = {
   veggie:  { palette:['#4fae38','#78ce55','#3a8c26','#a3e878','#2c6e1c','#63bd44'], patternId:'pat-leaf' },
   sauce:   { palette:['#e26a26','#ff9340','#c74f16','#ffb36b','#ab3d0d','#f28242'], patternId:'pat-drip' },
   topping: { palette:['#ef8ab8','#ffb0d0','#dd6aa2','#ffd0e4','#c74e8c','#f79cc6'], patternId:'pat-sparkle' },
-  wild:    { palette:['#8e46bd','#b85ce8','#6a2e94','#d97ffb','#4f1f75','#a84fd4'], patternId:'pat-zigzag' },
-  mystery: SECRET_WHEEL_STYLE
+  wild:    { palette:['#8e46bd','#b85ce8','#6a2e94','#d97ffb','#4f1f75','#a84fd4'], patternId:'pat-zigzag' }
 };
 
 const DEFAULT_STYLE = {
@@ -19,10 +16,7 @@ const DEFAULT_STYLE = {
   patternId:'pat-globe'
 };
 
-// I gyllene läget byter alla hjul till regnbågspaletten — det är den
-// tydligaste signalen om att något är annorlunda.
-export function wheelStyle(stationKey, secretOn){
-  if(secretOn) return SECRET_WHEEL_STYLE;
+export function wheelStyle(stationKey){
   return WHEEL_STYLES[stationKey] || DEFAULT_STYLE;
 }
 

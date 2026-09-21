@@ -1,6 +1,6 @@
 import { dc, cap } from './text.js';
 import { RECIPE_TEMPLATES } from '../data/recipeTemplates.js';
-import { CUISINES } from '../data/cuisines.js';
+import { CUISINES, templatesForCuisine } from '../data/cuisines.js';
 
 export function formatDate(ts){
   var d = new Date(ts);
@@ -13,10 +13,19 @@ export function formatDate(ts){
 const RECENT_MEMORY = 3;
 let recentTemplateIds = [];
 
-function pickTemplate(){
-  if(RECIPE_TEMPLATES.length === 1) return RECIPE_TEMPLATES[0];
-  const candidates = RECIPE_TEMPLATES.filter(t => recentTemplateIds.indexOf(t.id) === -1);
-  const pool = candidates.length ? candidates : RECIPE_TEMPLATES;
+// Bara mallar som faktiskt passar köket får vara med i lotten — annars kan
+// t.ex. "ramen" dyka upp för ett nordiskt kök. Saknar köket en egen lista
+// (eller är det inget valt kök) används alla mallar som fallback.
+function pickTemplate(cuisine){
+  const allowedIds = templatesForCuisine(cuisine);
+  const eligible = allowedIds
+    ? RECIPE_TEMPLATES.filter(t => allowedIds.indexOf(t.id) !== -1)
+    : RECIPE_TEMPLATES;
+  const base = eligible.length ? eligible : RECIPE_TEMPLATES;
+
+  if(base.length === 1) return base[0];
+  const candidates = base.filter(t => recentTemplateIds.indexOf(t.id) === -1);
+  const pool = candidates.length ? candidates : base;
   const template = pool[Math.floor(Math.random() * pool.length)];
   recentTemplateIds = [template.id].concat(recentTemplateIds).slice(0, RECENT_MEMORY);
   return template;
@@ -27,17 +36,12 @@ export function craftRecipe(results){
         veggies = results.veggie || [], sauce = results.sauce,
         topping = results.topping, wild = results.wild;
   const extras = results.extras || [];
-  const mystery = results.mystery;
   const veggieLower = veggies.map(dc).join(', ');
   const cuisine = CUISINES.find(c => c.label === results.cuisine);
 
-  const template = pickTemplate();
+  const template = pickTemplate(cuisine);
   const ctx = { protein, carb, veggieLower, sauce, topping, wild, cuisine };
   const steps = template.buildSteps(ctx);
-
-  if(mystery){
-    steps.push('Mystisk ingrediens: ' + mystery.replace('🔮 ', '') + '. Tolka den precis som du vill — det är hela poängen.');
-  }
 
   const bonusStep = buildBonusStep(extras);
   if(bonusStep) steps.push(bonusStep);

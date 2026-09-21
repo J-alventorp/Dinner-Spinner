@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { wheelStyle, BONUS_SLICE_FILL, BONUS_SLICE_STROKE } from '../data/wheelStyles.js';
+import { wheelStyle, BONUS_SLICE_FILL } from '../data/wheelStyles.js';
 import { BONUS_TOKEN } from '../data/bonus.js';
 import { CLASSIC_SPIN_MS } from '../data/spinTiming.js';
 
@@ -65,16 +65,13 @@ function PatternDefs({ patternId }){
   }
 }
 
-// `uid` håller SVG-id:n unika. Turbo-läget renderar sju hjul samtidigt i
-// samma dokument, och delade pattern-/filter-id:n hade fått dem att plocka
-// varandras mönster.
 export default function Wheel({
-  items, rotation, stationKey, durationMs, free,
-  winnerIndex, goldenIndex, compact, secretOn, uid
+  items, rotation, stationKey, durationMs,
+  winnerIndex, compact, uid
 }){
   const n = items.length;
   const cx = 150, cy = 150, r = 145;
-  const style = wheelStyle(stationKey, secretOn);
+  const style = wheelStyle(stationKey);
   const suffix = uid || stationKey || 'w';
   const patRef = style.patternId + '-' + suffix;
   const glowRef = 'glow-' + suffix;
@@ -105,11 +102,10 @@ export default function Wheel({
   }, [items, n, style]);
 
   const winner = winnerIndex != null ? segments[winnerIndex] : null;
-  const golden = goldenIndex != null ? segments[goldenIndex] : null;
 
   return (
     <svg
-      className={'wheel' + (free ? ' wheel-free' : '')}
+      className="wheel"
       viewBox="0 0 300 300"
       style={{ transform: `rotate(${rotation}deg)`, '--spin-ms': (durationMs || CLASSIC_SPIN_MS) + 'ms' }}
     >
@@ -139,19 +135,6 @@ export default function Wheel({
       ))}
 
       <circle cx={cx} cy={cy} r={r} fill={`url(#${patRef})`} opacity="0.15" />
-
-      {/* Målrutan i skicklighetsläget — markerad INNAN spelaren stoppar,
-          så det finns något att sikta på. */}
-      {golden && (
-        <path
-          className="slice-golden"
-          d={golden.path}
-          fill="none"
-          stroke={BONUS_SLICE_STROKE}
-          strokeWidth="6"
-          filter={`url(#${glowRef})`}
-        />
-      )}
 
       {/* Vinnarrutan ritas om ovanpå så den lyser upp när hjulet stannat. */}
       {winner && (

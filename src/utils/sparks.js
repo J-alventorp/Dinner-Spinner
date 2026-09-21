@@ -2,8 +2,7 @@ const SPARK_COLORS = ['#FFD447', '#FFB020', '#FFF3B0', '#FF8C42'];
 
 export const SPARK_PALETTES = {
   normal: SPARK_COLORS,
-  gold: ['#FFF3B0', '#FFC933', '#FFE680'],
-  rainbow: ['#ff2d95', '#ffe14d', '#3ddc84', '#00c2ff', '#9b5cff']
+  gold: ['#FFF3B0', '#FFC933', '#FFE680']
 };
 
 function makeSpark(width, colors){

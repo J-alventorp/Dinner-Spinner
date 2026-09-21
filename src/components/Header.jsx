@@ -1,5 +1,5 @@
 export default function Header({
-  muted, onToggleMute, onOpenEdit, onOpenFavorites, onOpenHistory, onOpenMinigame, onReset
+  muted, onToggleMute, onOpenEdit, onOpenFavorites, onOpenHistory, onReset
 }){
   return (
     <header>
@@ -9,7 +9,6 @@ export default function Header({
         <button className="icon-btn" title="Anpassa hjul" aria-label="Anpassa hjul" onClick={onOpenEdit}>⚙️</button>
         <button className="icon-btn" title="Favoriter" aria-label="Favoriter" onClick={onOpenFavorites}>❤️</button>
         <button className="icon-btn" title="Historik" aria-label="Historik" onClick={onOpenHistory}>🕘</button>
-        <button className="icon-btn" title="Minispel" aria-label="Minispel" onClick={onOpenMinigame}>🎮</button>
         <button
           className={'icon-btn' + (muted ? ' muted' : '')}
           title={muted ? 'Slå på ljud' : 'Stäng av ljud'}

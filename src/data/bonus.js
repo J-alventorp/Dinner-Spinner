@@ -11,7 +11,6 @@ export const BONUS_TOKEN = '🎁 BONUS';
 // stationsbesök (App håller det i state) — annars skulle hjulet byta
 // utseende mellan renderingar.
 export const BONUS_CHANCE = 0.28;
-export const SECRET_BONUS_CHANCE = 0.5;
 
 // Stationer som aldrig får bonusruta. Kök-hjulet är för litet och styr
 // hela receptets ton, så en bonusruta där känns mest som en miss.
@@ -36,8 +35,7 @@ export const BONUS_EXTRAS = [
   'Ett stekt ägg ovanpå',
   'Sirap & soja-glaze',
   'Rostat bröd till',
-  'Extra vitlök (alltid rätt)',
-  'Efterrätt ingår'
+  'Extra vitlök'
 ];
 
 export function randomBonusExtra(exclude){
@@ -55,7 +53,7 @@ export function injectBonus(pool){
   return next;
 }
 
-export function shouldRollBonus(stationKey, secretOn){
+export function shouldRollBonus(stationKey){
   if(BONUS_EXCLUDED_STATIONS.indexOf(stationKey) !== -1) return false;
-  return Math.random() < (secretOn ? SECRET_BONUS_CHANCE : BONUS_CHANCE);
+  return Math.random() < BONUS_CHANCE;
 }
