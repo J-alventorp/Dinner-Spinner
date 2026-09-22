@@ -17,6 +17,7 @@ En liten webbapp där du snurrar fram kvällens middag istället för att bestä
 - Ljud, konfetti och vibration – allt går att stänga av med 🔊-knappen
 - Respekterar `prefers-reduced-motion`
 - Allt sparas lokalt i webbläsaren (`localStorage`) – inget konto behövs
+- Går att installera på hemskärmen som en app ("Lägg till på hemskärmen" i mobilens delningsmeny, eller installationsikonen i adressfältet på desktop) – öppnas då med en egen ikon och en kort startanimation
 
 ## Köra lokalt
 ```
@@ -27,3 +28,5 @@ Bygg för produktion med `npm run build` (output i `dist/`), förhandsgranska me
 
 ## Teknik
 React + Vite, utan fler beroenden än så. Alla ljud är syntetiserade med WebAudio (inga ljudfiler), och konfetti är egen canvas-kod. All persistens sker lokalt i webbläsaren – ingen backend.
+
+App-ikonen (`scripts/icon-source.svg`) rastas till PNG i olika storlekar med `node scripts/generate-icons.mjs` – kör om det skriptet om du ändrar ikonen. Installerbarheten sköts av `vite-plugin-pwa` (manifest + service worker, konfigurerat i `vite.config.js`).

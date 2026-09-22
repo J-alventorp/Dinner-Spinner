@@ -22,6 +22,7 @@ import ConfettiCanvas from './components/ConfettiCanvas.jsx';
 import EditWheelsModal from './components/modals/EditWheelsModal.jsx';
 import FavoritesModal from './components/modals/FavoritesModal.jsx';
 import HistoryModal from './components/modals/HistoryModal.jsx';
+import SplashScreen from './components/SplashScreen.jsx';
 
 const EMPTY_RESULTS = {
   cuisine: null, protein: null, carb: null, veggie: [],
@@ -470,6 +471,7 @@ export default function App(){
 
   return (
     <>
+      <SplashScreen />
       <div className={'app' + (shake ? ' shake' : '')}>
         <Header
           muted={muted}

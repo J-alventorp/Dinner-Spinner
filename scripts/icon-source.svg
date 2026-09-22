@@ -1,0 +1,103 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FF7A45"/>
+      <stop offset="100%" stop-color="#E2472F"/>
+    </linearGradient>
+    <radialGradient id="plateRim" cx="38%" cy="30%" r="80%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="55%" stop-color="#FBF2DE"/>
+      <stop offset="100%" stop-color="#EBD9B4"/>
+    </radialGradient>
+    <radialGradient id="plateWell" cx="40%" cy="35%" r="75%">
+      <stop offset="0%" stop-color="#FFFDF6"/>
+      <stop offset="70%" stop-color="#F6E9C9"/>
+      <stop offset="100%" stop-color="#E4CD9B"/>
+    </radialGradient>
+    <linearGradient id="noodle" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFDA7A"/>
+      <stop offset="100%" stop-color="#EFA436"/>
+    </linearGradient>
+    <radialGradient id="meatball" cx="35%" cy="28%" r="75%">
+      <stop offset="0%" stop-color="#B27F54"/>
+      <stop offset="50%" stop-color="#8B532F"/>
+      <stop offset="100%" stop-color="#623A21"/>
+    </radialGradient>
+    <linearGradient id="sauce" x1="0" y1="0" x2="1" y2="0.3">
+      <stop offset="0%" stop-color="#F2703B"/>
+      <stop offset="100%" stop-color="#D63A24"/>
+    </linearGradient>
+    <radialGradient id="tomato" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#FF8A6C"/>
+      <stop offset="100%" stop-color="#D6402A"/>
+    </radialGradient>
+    <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="7" stdDeviation="9" flood-color="#2A1200" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- background -->
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <ellipse cx="180" cy="80" rx="170" ry="100" fill="#FFFFFF" opacity="0.08"/>
+
+  <!-- table shadow -->
+  <ellipse cx="256" cy="410" rx="182" ry="26" fill="#210F00" opacity="0.22"/>
+
+  <!-- plate (large, fills most of the frame) -->
+  <g filter="url(#softShadow)">
+    <circle cx="256" cy="266" r="206" fill="url(#plateRim)"/>
+    <circle cx="256" cy="266" r="206" fill="none" stroke="#DCC495" stroke-width="3" opacity="0.6"/>
+    <circle cx="256" cy="266" r="168" fill="url(#plateWell)"/>
+    <circle cx="256" cy="266" r="168" fill="none" stroke="#E2CB9C" stroke-width="2.5" opacity="0.7"/>
+  </g>
+  <ellipse cx="196" cy="192" rx="86" ry="36" fill="#FFFFFF" opacity="0.35"/>
+
+  <!-- sauce pool -->
+  <ellipse cx="256" cy="278" rx="140" ry="112" fill="url(#sauce)" opacity="0.4"/>
+
+  <!-- noodle nest, bold strands -->
+  <g stroke="url(#noodle)" stroke-width="22" stroke-linecap="round" fill="none">
+    <path d="M128 256 C146 176, 264 168, 288 234 C308 292, 220 328, 184 288 C164 266, 186 234, 218 244"/>
+    <path d="M150 320 C206 376, 314 360, 344 288"/>
+    <path d="M176 196 C232 176, 292 196, 324 250"/>
+  </g>
+  <g stroke="#FFEDB8" stroke-width="7" stroke-linecap="round" fill="none" opacity="0.55">
+    <path d="M136 250 C154 178, 264 168, 286 228"/>
+    <path d="M182 200 C232 182, 288 198, 316 244"/>
+  </g>
+
+  <!-- meatballs with highlight -->
+  <g>
+    <circle cx="338" cy="216" r="44" fill="url(#meatball)"/>
+    <ellipse cx="321" cy="198" rx="13" ry="8" fill="#D8AE84" opacity="0.85"/>
+    <circle cx="356" cy="322" r="38" fill="url(#meatball)"/>
+    <ellipse cx="341" cy="307" rx="12" ry="7" fill="#D8AE84" opacity="0.85"/>
+    <circle cx="206" cy="342" r="33" fill="url(#meatball)"/>
+    <ellipse cx="193" cy="330" rx="10" ry="6" fill="#D8AE84" opacity="0.85"/>
+  </g>
+
+  <!-- cherry tomato -->
+  <g>
+    <circle cx="176" cy="176" r="19" fill="url(#tomato)"/>
+    <ellipse cx="169" cy="169" rx="5" ry="4" fill="#FFC0A8" opacity="0.85"/>
+    <path d="M176 160 l-4 -8 l8 3 l4 -8 l3 8 l8 -4 l-3 9" fill="#7C9A3A"/>
+  </g>
+
+  <!-- sauce drizzle gloss -->
+  <path d="M150 272 Q256 320 362 260" stroke="url(#sauce)" stroke-width="11" fill="none" stroke-linecap="round" opacity="0.75"/>
+  <path d="M164 264 Q256 302 348 256" stroke="#FFB27A" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.5"/>
+
+  <!-- basil leaves -->
+  <g fill="#7C9A3A">
+    <path d="M306 168 C326 158 346 172 338 194 C318 200 300 188 306 168 Z"/>
+    <path d="M262 348 C278 338 298 346 294 366 C276 374 258 364 262 348 Z"/>
+    <path d="M140 300 C154 292 170 300 166 316 C152 322 138 314 140 300 Z"/>
+  </g>
+
+  <!-- steam wisps -->
+  <g stroke="#FFFFFF" stroke-width="11" stroke-linecap="round" fill="none" opacity="0.5">
+    <path d="M196 104 C184 80 212 68 200 42"/>
+    <path d="M254 90 C242 66 270 54 258 28"/>
+    <path d="M312 104 C300 80 328 68 316 42"/>
+  </g>
+</svg>
